@@ -31,7 +31,7 @@ import {
   IFileBrowserFactory
 } from '@jupyterlab/filebrowser';
 
-import { Launcher } from '@jupyterlab/launcher';
+import { SWANLauncher } from '@ozapatam/launcher';
 
 import { IMainMenu } from '@jupyterlab/mainmenu';
 
@@ -67,8 +67,6 @@ import { CommandRegistry } from '@lumino/commands';
 import { Message } from '@lumino/messaging';
 
 import { Menu } from '@lumino/widgets';
-
-import { request } from './request';
 
 /**
  * The command IDs used by the file browser plugin.
@@ -129,50 +127,12 @@ namespace CommandIDs {
   export const toggleLastModified = 'filebrowser:toggle-last-modified';
 }
 
-
-export function contentRequest(cwd:string):any
-{
-  try {
-    return request<any>('api/contents/'+ cwd, {
-      method: 'GET'
-    }).then(rvalue => {
-        //console.log(rvalue);
-        return rvalue;
-    });
-  } catch (reason) {
-    console.error(
-      `Error on GET 'api/contents'+ ${cwd}.\n${reason}`
-    );
-  }
-}
-
-export function projectInfoRequest(cwd:string):any
-{
-  const dataToSend = { CWD: cwd};
-  try {
-    return request<any>('swan/project/info', {
-      body: JSON.stringify(dataToSend),
-      method: 'POST'
-    }).then(rvalue => {
-      this.model.stateChanged.emit(void 0);
-      this.update();
-          //console.log(rvalue);
-        return rvalue;
-    });
-  } catch (reason) {
-    console.error(
-      `Error on POST 'swan/project/info'+ ${dataToSend}.\n${reason}`
-    );
-  }
-}
-
-
 /**
  * The default file browser extension.
  */
 const browser: JupyterFrontEndPlugin<void> = {
   activate: activateBrowser,
-  id: '@jupyterlab/filebrowser-extension:browser',
+  id: '@ozapatam/filebrowser-extension:browser',
   requires: [
     IFileBrowserFactory,
     IDocumentManager,
@@ -189,7 +149,7 @@ const browser: JupyterFrontEndPlugin<void> = {
  */
 const factory: JupyterFrontEndPlugin<IFileBrowserFactory> = {
   activate: activateFactory,
-  id: '@jupyterlab/filebrowser-extension:factory',
+  id: '@ozapatam/filebrowser-extension:factory',
   provides: IFileBrowserFactory,
   requires: [IDocumentManager],
   optional: [IStateDB, IRouter, JupyterFrontEnd.ITreeResolver]
@@ -208,7 +168,7 @@ const factory: JupyterFrontEndPlugin<IFileBrowserFactory> = {
  */
 const shareFile: JupyterFrontEndPlugin<void> = {
   activate: activateShareFile,
-  id: '@jupyterlab/filebrowser-extension:share-file',
+  id: '@ozapatam/filebrowser-extension:share-file',
   requires: [IFileBrowserFactory],
   autoStart: true
 };
@@ -217,7 +177,7 @@ const shareFile: JupyterFrontEndPlugin<void> = {
  * A plugin providing file upload status.
  */
 export const fileUploadStatus: JupyterFrontEndPlugin<void> = {
-  id: '@jupyterlab/filebrowser-extension:file-upload-status',
+  id: '@ozapatam/filebrowser-extension:file-upload-status',
   autoStart: true,
   requires: [IFileBrowserFactory],
   optional: [IStatusBar],
@@ -235,7 +195,7 @@ export const fileUploadStatus: JupyterFrontEndPlugin<void> = {
     });
 
     statusBar.registerStatusItem(
-      '@jupyterlab/filebrowser-extension:file-upload-status',
+      '@ozapatam/filebrowser-extension:file-upload-status',
       {
         item,
         align: 'middle',
@@ -332,7 +292,7 @@ function activateBrowser(
 ): void {
   const browser = factory.defaultBrowser;
   const { commands } = app;
-
+  console.log("SWAN FileBrowser Activated");
   // Let the application restorer track the primary file browser (that is
   // automatically created) for restoration of application state (e.g. setting
   // the file browser as the current side bar widget).
@@ -340,6 +300,12 @@ function activateBrowser(
   // All other file browsers created by using the factory function are
   // responsible for their own restoration behavior, if any.
   restorer.add(browser, namespace);
+  browser.modelForClick = function(event: MouseEvent): Contents.IModel | undefined
+  {
+    console.log("mouse event = "+event);
+    
+    return this._listing.modelForClick(event);
+  }
 
   addCommands(
     app,
@@ -360,9 +326,9 @@ function activateBrowser(
     );
     if (binding) {
       const ks = CommandRegistry.formatKeystroke(binding.keys.join(' '));
-      browser.title.caption = `File Browser (${ks})`;
+      browser.title.caption = `SWAN File Browser (${ks})`;
     } else {
-      browser.title.caption = 'File Browser';
+      browser.title.caption = 'SWAN File Browser';
     }
   };
   updateBrowserTitle();
@@ -394,7 +360,7 @@ function activateBrowser(
     let navigateToCurrentDirectory: boolean = false;
 
     void settingRegistry
-      .load('@jupyterlab/filebrowser-extension:browser')
+      .load('@ozapatam/filebrowser-extension:browser')
       .then(settings => {
         settings.changed.connect(settings => {
           navigateToCurrentDirectory = settings.get(
@@ -414,6 +380,8 @@ function activateBrowser(
         const context = docManager.contextForWidget(newValue);
         if (context) {
           const { path } = context;
+          console.log("labShell.currentChanged.connect = "+path);
+
           try {
             await Private.navigateToPath(path, factory);
             labShell.currentWidget?.activate();
@@ -599,6 +567,7 @@ function addCommands(
         }
         await commands.execute(CommandIDs.goToPath, { path });
         if (item.type === 'directory') {
+          console.log("openPath = "+path);
           return;
         }
         return commands.execute('docmanager:open', { path });
@@ -632,13 +601,10 @@ function addCommands(
         toArray(
           map(widget.selectedItems(), item => {
             if (item.type === 'directory') {
-              const localPath = contents.localPath(item.path);
+              console.log("open = "+item.path);
 
-              console.log("SETTING PATH 2 = "+item.path)
-              //return  projectInfoRequest(item.path).then(()=>{
-              //Private.createLauncher(commands, browser)
+              const localPath = contents.localPath(item.path);
               return widget.model.cd(`/${localPath}`);
-              //})        
             }
 
             return commands.execute('docmanager:open', {
@@ -798,14 +764,12 @@ function addCommands(
     execute: args => {
       const path = (args.path as string) || '';
       const browserForPath = Private.getBrowserForPath(path, factory);
+      console.log("showBrowser = "+path);
 
       // Check for browser not found
       if (!browserForPath) {
         return;
       }
-      console.log("ShowBrowser = "+path)
-      //projectInfoRequest(path).then(()=>{
-        //Private.createLauncher(commands, browser);
       // Shortcut if we are using the main file browser
       if (browser === browserForPath) {
         labShell.activateById(browser.id);
@@ -824,7 +788,6 @@ function addCommands(
           }
         }
       }
-      //});
     }
   });
 
@@ -862,7 +825,7 @@ function addCommands(
       const value = !browser.navigateToCurrentDirectory;
       const key = 'navigateToCurrentDirectory';
       return settingRegistry
-        .set('@jupyterlab/filebrowser-extension:browser', key, value)
+        .set('@ozapatam/filebrowser-extension:browser', key, value)
         .catch((reason: Error) => {
           console.error(`Failed to set navigateToCurrentDirectory setting`);
         });
@@ -1100,12 +1063,11 @@ namespace Private {
   export function createLauncher(
     commands: CommandRegistry,
     browser: FileBrowser
-  ): Promise<MainAreaWidget<Launcher>> {
+  ): Promise<MainAreaWidget<SWANLauncher>> {
     const { model } = browser;
-
     return commands
       .execute('launcher:create', { cwd: model.path })
-      .then((launcher: MainAreaWidget<Launcher>) => {
+      .then((launcher: MainAreaWidget<SWANLauncher>) => {
         model.pathChanged.connect(() => {
           if (launcher.content) {
             launcher.content.cwd = model.path;
@@ -1137,6 +1099,7 @@ namespace Private {
         );
         return;
       }
+      console.log("getBrowserForPaths = "+path)
 
       return browserForPath;
     }
@@ -1163,9 +1126,8 @@ namespace Private {
     const item = await services.contents.get(path, { content: false });
     const { model } = browserForPath;
     await model.restored;
+    console.log("navigateToPath = "+localPath)
     if (item.type === 'directory') {
-      console.log("SETTING PATH = "+item.path)
-      //await projectInfoRequest(item.path);
       await model.cd(`/${localPath}`);
     } else {
       await model.cd(`/${PathExt.dirname(localPath)}`);

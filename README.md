@@ -1,3 +1,3 @@
-# Based on @jupyterlab/filebrowser-extension
+# @jupyterlab/filebrowser-extension
 
-An extension for JupyterLab which provides File Browser for SWAN.
+An extension for JupyterLab which provides an entry point, commands, and keyboard shortcuts for the [@jupyterlab/filebrowser](../filebrowser) package.

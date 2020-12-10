@@ -1,6 +1,4 @@
 import { JupyterFrontEndPlugin } from '@jupyterlab/application';
-export declare function contentRequest(cwd: string): any;
-export declare function projectInfoRequest(cwd: string): any;
 /**
  * A plugin providing file upload status.
  */
