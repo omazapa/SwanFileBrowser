@@ -68,6 +68,32 @@ import { Message } from '@lumino/messaging';
 
 import { Menu } from '@lumino/widgets';
 
+
+export class SwanFileBrowserModel extends FileBrowserModel
+{
+  constructor(options: FileBrowserModel.IOptions) {
+    super(options)
+  }
+
+  async cd(newValue = '.'): Promise<void> {
+    if(newValue!=='.')
+    {
+      console.log("cd to ="+newValue);
+    }
+    super.cd(newValue);
+  }
+}
+
+
+export class SwanFileBrowser extends FileBrowser{
+  constructor(options: FileBrowser.IOptions) {
+    super(options);
+    super.id = options.id;    
+    console.log("SwanFileBrowser Created"+this.model.path);
+
+  }
+}
+
 /**
  * The command IDs used by the file browser plugin.
  */
@@ -235,12 +261,12 @@ async function activateFactory(
   tree: JupyterFrontEnd.ITreeResolver | null
 ): Promise<IFileBrowserFactory> {
   const { commands } = app;
-  const tracker = new WidgetTracker<FileBrowser>({ namespace });
+  const tracker = new WidgetTracker<SwanFileBrowser>({ namespace });
   const createFileBrowser = (
     id: string,
     options: IFileBrowserFactory.IOptions = {}
   ) => {
-    const model = new FileBrowserModel({
+    const model = new SwanFileBrowserModel({
       auto: options.auto ?? true,
       manager: docManager,
       driveName: options.driveName || '',
@@ -249,7 +275,7 @@ async function activateFactory(
         options.state === null ? undefined : options.state || state || undefined
     });
     const restore = options.restore;
-    const widget = new FileBrowser({ id, model, restore });
+    const widget = new SwanFileBrowser({ id, model, restore });
 
     // Add a launcher toolbar item.
     const launcher = new ToolbarButton({
@@ -290,7 +316,7 @@ function activateBrowser(
   commandPalette: ICommandPalette | null,
   mainMenu: IMainMenu | null
 ): void {
-  const browser = factory.defaultBrowser;
+  const browser = <SwanFileBrowser>factory.defaultBrowser;
   const { commands } = app;
   console.log("SWAN FileBrowser Activated");
   // Let the application restorer track the primary file browser (that is
@@ -300,12 +326,6 @@ function activateBrowser(
   // All other file browsers created by using the factory function are
   // responsible for their own restoration behavior, if any.
   restorer.add(browser, namespace);
-  browser.modelForClick = function(event: MouseEvent): Contents.IModel | undefined
-  {
-    console.log("mouse event = "+event);
-    
-    return this._listing.modelForClick(event);
-  }
 
   addCommands(
     app,
@@ -437,8 +457,9 @@ function addCommands(
   mainMenu: IMainMenu | null
 ): void {
   const { docRegistry: registry, commands } = app;
-  const { defaultBrowser: browser, tracker } = factory;
-
+  let { defaultBrowser: browser, tracker } = factory;
+  browser = <SwanFileBrowser>browser;
+  
   commands.addCommand(CommandIDs.del, {
     execute: () => {
       const widget = tracker.currentWidget;
@@ -565,9 +586,9 @@ function addCommands(
         if (trailingSlash && item.type !== 'directory') {
           throw new Error(`Path ${path}/ is not a directory`);
         }
+        console.log("openPath = "+path);
         await commands.execute(CommandIDs.goToPath, { path });
         if (item.type === 'directory') {
-          console.log("openPath = "+path);
           return;
         }
         return commands.execute('docmanager:open', { path });
@@ -600,8 +621,8 @@ function addCommands(
       return Promise.all(
         toArray(
           map(widget.selectedItems(), item => {
+            console.log("open = "+item.path);
             if (item.type === 'directory') {
-              console.log("open = "+item.path);
 
               const localPath = contents.localPath(item.path);
               return widget.model.cd(`/${localPath}`);
@@ -815,7 +836,7 @@ function addCommands(
 
   commands.addCommand(CommandIDs.createLauncher, {
     label: 'New Launcher',
-    execute: () => Private.createLauncher(commands, browser)
+    execute: () => Private.createLauncher(commands, <FileBrowser>browser)
   });
 
   commands.addCommand(CommandIDs.toggleNavigateToCurrentDirectory, {
@@ -910,6 +931,7 @@ function addCommands(
         item.type === 'notebook' &&
         factories.indexOf(notebookFactory) === -1
       ) {
+        console.log(notebookFactory);
         factories.unshift(notebookFactory);
       }
 
@@ -1062,7 +1084,7 @@ namespace Private {
    */
   export function createLauncher(
     commands: CommandRegistry,
-    browser: FileBrowser
+    browser: SwanFileBrowser
   ): Promise<MainAreaWidget<SWANLauncher>> {
     const { model } = browser;
     return commands
@@ -1083,7 +1105,7 @@ namespace Private {
   export function getBrowserForPath(
     path: string,
     factory: IFileBrowserFactory
-  ): FileBrowser | undefined {
+  ): SwanFileBrowser | undefined {
     const { defaultBrowser: browser, tracker } = factory;
     const driveName = browser.model.manager.services.contents.driveName(path);
 
@@ -1139,7 +1161,7 @@ namespace Private {
    * Restores file browser state and overrides state if tree resolver resolves.
    */
   export async function restoreBrowser(
-    browser: FileBrowser,
+    browser: SwanFileBrowser,
     commands: CommandRegistry,
     router: IRouter | null,
     tree: JupyterFrontEnd.ITreeResolver | null

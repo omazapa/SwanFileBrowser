@@ -1606,8 +1606,8 @@
         "signature": "a32f8a020717c7da878d459d8074a30e385fa4c81bd0af16797bcd9edb354c97"
       },
       "./src/index.ts": {
-        "version": "b74f4b55863f15ffcfbc876bb17d3834eb7cd6b6d91775a0921a80e2b5654c40",
-        "signature": "63e3b1e67016366ee7d2f9d07d2cdf596e54b3dbcfa1bd07adca0fc3d56c9b13"
+        "version": "edf7d6a2a6e207fe235415567c53e7ab8d238684170dabb51fab8944acffb64d",
+        "signature": "38a4678842fcd89861a4be33cc40b7237d3bd2e1b3a92ba4d3e672f9791cbe66"
       },
       "./src/request.ts": {
         "version": "f20f231e91da6bcae70f6e9d0be473211aa4ebea910f7794275c29afb2bf3d6c",
@@ -5334,6 +5334,7 @@
         "./node_modules/@jupyterlab/statusbar/lib/tokens.d.ts"
       ],
       "./src/index.ts": [
+        "./node_modules/@jupyterlab/filebrowser/lib/index.d.ts",
         "./node_modules/@jupyterlab/application/lib/index.d.ts"
       ]
     },
