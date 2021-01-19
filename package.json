@@ -1,5 +1,5 @@
 {
-  "name": "@ozapatam/filebrowser-extension",
+  "name": "@swan/filebrowser-extension",
   "version": "2.2.7",
   "description": "JupyterLab - Filebrowser Widget Extension",
   "homepage": "https://github.com/jupyterlab/jupyterlab",
@@ -42,7 +42,6 @@
     "@jupyterlab/coreutils": "^4.2.5",
     "@jupyterlab/docmanager": "^2.2.4",
     "@jupyterlab/filebrowser": "^2.2.5",
-    "@ozapatam/launcher": "^2.2.4",
     "@jupyterlab/mainmenu": "^2.2.4",
     "@jupyterlab/services": "^5.2.5",
     "@jupyterlab/settingregistry": "^2.2.5",

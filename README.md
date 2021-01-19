@@ -1,3 +1,3 @@
-# @jupyterlab/filebrowser-extension
+# @swan/filebrowser-extension
 
-An extension for JupyterLab which provides an entry point, commands, and keyboard shortcuts for the [@jupyterlab/filebrowser](../filebrowser) package.
+An extension for JupyterLab which provides an entry point, commands, and keyboard shortcuts for the [@swan/filebrowser](../filebrowser) package.

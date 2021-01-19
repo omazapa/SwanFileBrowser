@@ -7,6 +7,7 @@
 # Install dependencies
 jupyter labextension disable @jupyterlab/filebrowser-extension
 #jupyter labextension enable @jupyterlab/filebrowser-extension
+jlpm clean
 jlpm
 # Build Typescript source
 jlpm build

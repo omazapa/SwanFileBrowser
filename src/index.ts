@@ -25,13 +25,12 @@ import { PageConfig, PathExt, URLExt } from '@jupyterlab/coreutils';
 import { IDocumentManager } from '@jupyterlab/docmanager';
 
 import {
-  FileBrowserModel,
   FileBrowser,
   FileUploadStatus,
   IFileBrowserFactory
 } from '@jupyterlab/filebrowser';
 
-import { SWANLauncher } from '@ozapatam/launcher';
+import { SWANLauncher } from '@swan/projects';
 
 import { IMainMenu } from '@jupyterlab/mainmenu';
 
@@ -43,6 +42,7 @@ import { IStateDB } from '@jupyterlab/statedb';
 
 import { IStatusBar } from '@jupyterlab/statusbar';
 
+import { SwanFileBrowserModel, SwanFileBrowser } from "./swanfilebrowser";
 import {
   addIcon,
   closeIcon,
@@ -68,31 +68,6 @@ import { Message } from '@lumino/messaging';
 
 import { Menu } from '@lumino/widgets';
 
-
-export class SwanFileBrowserModel extends FileBrowserModel
-{
-  constructor(options: FileBrowserModel.IOptions) {
-    super(options)
-  }
-
-  async cd(newValue = '.'): Promise<void> {
-    if(newValue!=='.')
-    {
-      console.log("cd to ="+newValue);
-    }
-    super.cd(newValue);
-  }
-}
-
-
-export class SwanFileBrowser extends FileBrowser{
-  constructor(options: FileBrowser.IOptions) {
-    super(options);
-    super.id = options.id;    
-    console.log("SwanFileBrowser Created"+this.model.path);
-
-  }
-}
 
 /**
  * The command IDs used by the file browser plugin.
@@ -158,7 +133,7 @@ namespace CommandIDs {
  */
 const browser: JupyterFrontEndPlugin<void> = {
   activate: activateBrowser,
-  id: '@ozapatam/filebrowser-extension:browser',
+  id: '@swan/filebrowser-extension:browser',
   requires: [
     IFileBrowserFactory,
     IDocumentManager,
@@ -175,7 +150,7 @@ const browser: JupyterFrontEndPlugin<void> = {
  */
 const factory: JupyterFrontEndPlugin<IFileBrowserFactory> = {
   activate: activateFactory,
-  id: '@ozapatam/filebrowser-extension:factory',
+  id: '@swan/filebrowser-extension:factory',
   provides: IFileBrowserFactory,
   requires: [IDocumentManager],
   optional: [IStateDB, IRouter, JupyterFrontEnd.ITreeResolver]
@@ -194,7 +169,7 @@ const factory: JupyterFrontEndPlugin<IFileBrowserFactory> = {
  */
 const shareFile: JupyterFrontEndPlugin<void> = {
   activate: activateShareFile,
-  id: '@ozapatam/filebrowser-extension:share-file',
+  id: '@swan/filebrowser-extension:share-file',
   requires: [IFileBrowserFactory],
   autoStart: true
 };
@@ -203,7 +178,7 @@ const shareFile: JupyterFrontEndPlugin<void> = {
  * A plugin providing file upload status.
  */
 export const fileUploadStatus: JupyterFrontEndPlugin<void> = {
-  id: '@ozapatam/filebrowser-extension:file-upload-status',
+  id: '@swan/filebrowser-extension:file-upload-status',
   autoStart: true,
   requires: [IFileBrowserFactory],
   optional: [IStatusBar],
@@ -221,7 +196,7 @@ export const fileUploadStatus: JupyterFrontEndPlugin<void> = {
     });
 
     statusBar.registerStatusItem(
-      '@ozapatam/filebrowser-extension:file-upload-status',
+      '@swan/filebrowser-extension:file-upload-status',
       {
         item,
         align: 'middle',
@@ -380,7 +355,7 @@ function activateBrowser(
     let navigateToCurrentDirectory: boolean = false;
 
     void settingRegistry
-      .load('@ozapatam/filebrowser-extension:browser')
+      .load('@swan/filebrowser-extension:browser')
       .then(settings => {
         settings.changed.connect(settings => {
           navigateToCurrentDirectory = settings.get(
@@ -400,7 +375,6 @@ function activateBrowser(
         const context = docManager.contextForWidget(newValue);
         if (context) {
           const { path } = context;
-          console.log("labShell.currentChanged.connect = "+path);
 
           try {
             await Private.navigateToPath(path, factory);
@@ -586,7 +560,6 @@ function addCommands(
         if (trailingSlash && item.type !== 'directory') {
           throw new Error(`Path ${path}/ is not a directory`);
         }
-        console.log("openPath = "+path);
         await commands.execute(CommandIDs.goToPath, { path });
         if (item.type === 'directory') {
           return;
@@ -621,7 +594,6 @@ function addCommands(
       return Promise.all(
         toArray(
           map(widget.selectedItems(), item => {
-            console.log("open = "+item.path);
             if (item.type === 'directory') {
 
               const localPath = contents.localPath(item.path);
@@ -785,7 +757,6 @@ function addCommands(
     execute: args => {
       const path = (args.path as string) || '';
       const browserForPath = Private.getBrowserForPath(path, factory);
-      console.log("showBrowser = "+path);
 
       // Check for browser not found
       if (!browserForPath) {
@@ -846,7 +817,7 @@ function addCommands(
       const value = !browser.navigateToCurrentDirectory;
       const key = 'navigateToCurrentDirectory';
       return settingRegistry
-        .set('@ozapatam/filebrowser-extension:browser', key, value)
+        .set('@swan/filebrowser-extension:browser', key, value)
         .catch((reason: Error) => {
           console.error(`Failed to set navigateToCurrentDirectory setting`);
         });
@@ -931,7 +902,6 @@ function addCommands(
         item.type === 'notebook' &&
         factories.indexOf(notebookFactory) === -1
       ) {
-        console.log(notebookFactory);
         factories.unshift(notebookFactory);
       }
 
@@ -1121,7 +1091,6 @@ namespace Private {
         );
         return;
       }
-      console.log("getBrowserForPaths = "+path)
 
       return browserForPath;
     }
@@ -1148,7 +1117,6 @@ namespace Private {
     const item = await services.contents.get(path, { content: false });
     const { model } = browserForPath;
     await model.restored;
-    console.log("navigateToPath = "+localPath)
     if (item.type === 'directory') {
       await model.cd(`/${localPath}`);
     } else {
