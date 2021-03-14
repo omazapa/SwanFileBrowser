@@ -1,4 +1,4 @@
-// Copyright (c) Jupyter Development Team.
+// Copyright (c) SWAN Development Team.
 // Distributed under the terms of the Modified BSD License.
 
 import {
@@ -30,7 +30,7 @@ import {
   IFileBrowserFactory
 } from '@jupyterlab/filebrowser';
 
-import { SWANLauncher } from '@swan/projects';
+import { SWANLauncher } from '@swan/launcher';
 
 import { IMainMenu } from '@jupyterlab/mainmenu';
 
@@ -127,7 +127,6 @@ namespace CommandIDs {
 
   export const toggleLastModified = 'filebrowser:toggle-last-modified';
 }
-
 /**
  * The default file browser extension.
  */
