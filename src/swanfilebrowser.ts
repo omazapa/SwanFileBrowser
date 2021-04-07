@@ -29,10 +29,10 @@ export class SwanFileBrowserModel extends FileBrowserModel
   }
   async cd(newValue = '.'): Promise<void> {
     return super.cd(newValue).then(()=>{
-      if(newValue!=='.')
-      {
+      //if(newValue!=='.')
+      //{
         this.projectInfoRequest(this.path); 
-      }
+      //}
     })
   }
 }
