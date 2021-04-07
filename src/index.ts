@@ -30,7 +30,7 @@ import {
   IFileBrowserFactory
 } from '@jupyterlab/filebrowser';
 
-import { SWANLauncher } from '@swan/launcher';
+//import { SWANLauncher } from '@swan/launcher';
 
 import { IMainMenu } from '@jupyterlab/mainmenu';
 
@@ -234,6 +234,7 @@ async function activateFactory(
   router: IRouter | null,
   tree: JupyterFrontEnd.ITreeResolver | null
 ): Promise<IFileBrowserFactory> {
+  console.log("SWAN FileBrowser Activated");
   const { commands } = app;
   const tracker = new WidgetTracker<SwanFileBrowser>({ namespace });
   const createFileBrowser = (
@@ -292,7 +293,6 @@ function activateBrowser(
 ): void {
   const browser = <SwanFileBrowser>factory.defaultBrowser;
   const { commands } = app;
-  console.log("SWAN FileBrowser Activated");
   // Let the application restorer track the primary file browser (that is
   // automatically created) for restoration of application state (e.g. setting
   // the file browser as the current side bar widget).
@@ -1054,11 +1054,11 @@ namespace Private {
   export function createLauncher(
     commands: CommandRegistry,
     browser: SwanFileBrowser
-  ): Promise<MainAreaWidget<SWANLauncher>> {
+  ): Promise<MainAreaWidget<any>> {
     const { model } = browser;
     return commands
       .execute('launcher:create', { cwd: model.path })
-      .then((launcher: MainAreaWidget<SWANLauncher>) => {
+      .then((launcher: MainAreaWidget<any>) => {
         model.pathChanged.connect(() => {
           if (launcher.content) {
             launcher.content.cwd = model.path;

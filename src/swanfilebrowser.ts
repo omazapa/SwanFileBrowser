@@ -10,23 +10,9 @@ export class SwanFileBrowserModel extends FileBrowserModel
     super(options)
   }
 
-  // protected projectInfoRequest(path:string):any
-  // {
-  //   try {
-  //     return request<any>('swan/project/info?path='+path, {
-  //       method: 'POST'
-  //     }).then(rvalue => {
-  //         return rvalue;
-  //     });
-  //   } catch (reason) {
-  //     console.error(
-  //       `Error on POST 'swan/project/info?path='+ ${path}.\n${reason}`
-  //     );
-  //   }
-  // }
   protected projectInfoRequest(project:string):any
   {
-    const dataToSend = {'path':project};
+    const dataToSend = {'path':project,'caller':'swanfilebrowser'};
     try {
       return request<any>('swan/project/info', {
         body: JSON.stringify(dataToSend),
@@ -42,12 +28,12 @@ export class SwanFileBrowserModel extends FileBrowserModel
     }
   }
   async cd(newValue = '.'): Promise<void> {
-    if(newValue!=='.')
-    {
-        this.projectInfoRequest(newValue);
-        //this.manager.services.kernelspecs.refreshSpecs();
-    }
-    super.cd(newValue);
+    return super.cd(newValue).then(()=>{
+      if(newValue!=='.')
+      {
+        this.projectInfoRequest(this.path); 
+      }
+    })
   }
 }
 
