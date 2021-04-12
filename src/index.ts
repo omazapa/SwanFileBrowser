@@ -1,5 +1,6 @@
 // Copyright (c) SWAN Development Team.
-// Distributed under the terms of the Modified BSD License.
+// Modified from the original JupyterLab extension.
+// Author: Omar.Zapata@cern.ch 2021
 
 import {
   ILabShell,

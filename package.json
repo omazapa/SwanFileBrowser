@@ -1,17 +1,17 @@
 {
   "name": "@swan/filebrowser-extension",
   "version": "2.2.7",
-  "description": "JupyterLab - Filebrowser Widget Extension",
-  "homepage": "https://github.com/jupyterlab/jupyterlab",
+  "description": "JupyterLab - SWAN Filebrowser Widget Extension",
+  "homepage": "https://github.com/swan-cern/jupyter-extensions",
   "bugs": {
-    "url": "https://github.com/jupyterlab/jupyterlab/issues"
+    "url": "https://github.com/swan-cern/jupyter-extensions/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/jupyterlab/jupyterlab.git"
+    "url": "https://github.com/swan-cern/jupyter-extensions.git"
   },
   "license": "BSD-3-Clause",
-  "author": "Project Jupyter",
+  "author": "SWAN Team",
   "files": [
     "lib/*.d.ts",
     "lib/*.js.map",

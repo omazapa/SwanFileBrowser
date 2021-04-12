@@ -1,3 +1,5 @@
+// Copyright (c) SWAN Development Team.
+// Author: Omar.Zapata@cern.ch 2021
 import {
     FileBrowserModel,
     FileBrowser
@@ -29,10 +31,7 @@ export class SwanFileBrowserModel extends FileBrowserModel
   }
   async cd(newValue = '.'): Promise<void> {
     return super.cd(newValue).then(()=>{
-      //if(newValue!=='.')
-      //{
         this.projectInfoRequest(this.path); 
-      //}
     })
   }
 }
