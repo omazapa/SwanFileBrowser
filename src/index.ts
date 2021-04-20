@@ -235,7 +235,7 @@ async function activateFactory(
   router: IRouter | null,
   tree: JupyterFrontEnd.ITreeResolver | null
 ): Promise<IFileBrowserFactory> {
-  console.log("SWAN FileBrowser Activated");
+  console.log('JupyterLab extension swanfilebrowser is activated!');
   const { commands } = app;
   const tracker = new WidgetTracker<SwanFileBrowser>({ namespace });
   const createFileBrowser = (
