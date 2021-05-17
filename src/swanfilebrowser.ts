@@ -1,14 +1,14 @@
 // Copyright (c) SWAN Development Team.
 // Author: Omar.Zapata@cern.ch 2021
 import {
-    FileBrowserModel,
+  FilterFileBrowserModel,
     FileBrowser
   } from '@jupyterlab/filebrowser';
 import { request } from "./request";
 
-export class SwanFileBrowserModel extends FileBrowserModel
+export class SwanFileBrowserModel extends FilterFileBrowserModel
 {
-  constructor(options: FileBrowserModel.IOptions) {
+  constructor(options: FilterFileBrowserModel.IOptions) {
     super(options)
   }
 
