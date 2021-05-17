@@ -10,13 +10,15 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel
 {
   constructor(options: FilterFileBrowserModel.IOptions) {
     super(options)
+    this.kernelSpecSetPathRequest(this.path);
+
   }
 
-  protected projectInfoRequest(project:string):any
+  protected kernelSpecSetPathRequest(path:string):any
   {
-    const dataToSend = {'path':project,'caller':'swanfilebrowser'};
+    const dataToSend = {'path':path,'caller':'swanfilebrowser'};
     try {
-      return request<any>('swan/project/info', {
+      return request<any>('/swan/kernelspec/set', {
         body: JSON.stringify(dataToSend),
         method: 'POST'
       }).then(rvalue => {
@@ -25,13 +27,13 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel
       });
     } catch (reason) {
       console.error(
-        `Error on POST 'swan/project/info'+ ${dataToSend}.\n${reason}`
+        `Error on POST 'swan/kernelspec/set'+ ${dataToSend}.\n${reason}`
       );
     }
   }
   async cd(newValue = '.'): Promise<void> {
-    return super.cd(newValue).then(()=>{
-        this.projectInfoRequest(this.path); 
+    return super.cd(newValue).then(async ()=>{
+        await this.kernelSpecSetPathRequest(this.path); 
     })
   }
 }
