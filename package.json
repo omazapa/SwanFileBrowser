@@ -1,6 +1,6 @@
 {
   "name": "@swan/filebrowser-extension",
-  "version": "2.2.7",
+  "version": "0.0.1",
   "description": "JupyterLab - SWAN Filebrowser Widget Extension",
   "homepage": "https://github.com/swan-cern/jupyter-extensions",
   "bugs": {
@@ -10,7 +10,7 @@
     "type": "git",
     "url": "https://github.com/swan-cern/jupyter-extensions.git"
   },
-  "license": "BSD-3-Clause",
+  "license": "AGPL-3.0",
   "author": "SWAN Team",
   "files": [
     "lib/*.d.ts",
@@ -39,7 +39,7 @@
     "build:prod": "jlpm run clean && jlpm run build:lib && jlpm run build:labextension",
     "clean": "jlpm run clean:lib",
     "clean:all": "jlpm run clean:lib && jlpm run clean:labextension",
-    "clean:labextension": "rimraf swan_filebrowser_extension/labextension",
+    "clean:labextension": "rimraf swanfilebrowser/labextension",
     "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
     "docs": "typedoc src",
     "eslint": "eslint . --ext .ts,.tsx --fix",
@@ -86,7 +86,7 @@
   "jupyterlab": {
     "extension": true,
     "schemaDir": "schema",
-    "outputDir": "swan_filebrowser_extension/labextension"
+    "outputDir": "swanfilebrowser/labextension"
   },
   "styleModule": "style/index.js"
 }
