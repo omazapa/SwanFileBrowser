@@ -43,7 +43,7 @@ import { IStateDB } from '@jupyterlab/statedb';
 
 import { IStatusBar } from '@jupyterlab/statusbar';
 
-import { SwanFileBrowserModel, SwanFileBrowser } from "./swanfilebrowser";
+import { SwanFileBrowserModel, SwanFileBrowser } from './swanfilebrowser';
 import {
   addIcon,
   closeIcon,
@@ -68,7 +68,6 @@ import { CommandRegistry } from '@lumino/commands';
 import { Message } from '@lumino/messaging';
 
 import { Menu } from '@lumino/widgets';
-
 
 /**
  * The command IDs used by the file browser plugin.
@@ -352,7 +351,7 @@ function activateBrowser(
       maybeCreate();
     });
 
-    let navigateToCurrentDirectory: boolean = false;
+    let navigateToCurrentDirectory = false;
 
     void settingRegistry
       .load('@swan/filebrowser-extension:browser')
@@ -431,9 +430,10 @@ function addCommands(
   mainMenu: IMainMenu | null
 ): void {
   const { docRegistry: registry, commands } = app;
-  let { defaultBrowser: browser, tracker } = factory;
+  let { defaultBrowser: browser } = factory;
+  const { tracker } = factory;
   browser = <SwanFileBrowser>browser;
-  
+
   commands.addCommand(CommandIDs.del, {
     execute: () => {
       const widget = tracker.currentWidget;
@@ -552,7 +552,7 @@ function addCommands(
           // The normal contents service errors on paths ending in slash
           path = path.slice(0, path.length - 1);
         }
-        const browserForPath = Private.getBrowserForPath(path, factory)!;
+        const browserForPath = Private.getBrowserForPath(path, factory)!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
         const { services } = browserForPath.model.manager;
         const item = await services.contents.get(path, {
           content: false
@@ -595,7 +595,6 @@ function addCommands(
         toArray(
           map(widget.selectedItems(), item => {
             if (item.type === 'directory') {
-
               const localPath = contents.localPath(item.path);
               return widget.model.cd(`/${localPath}`);
             }
@@ -655,7 +654,7 @@ function addCommands(
       }
 
       return widget.model.manager.services.contents
-        .getDownloadUrl(widget.selectedItems().next()!.path)
+        .getDownloadUrl(widget.selectedItems().next()!.path) // eslint-disable-line @typescript-eslint/no-non-null-assertion
         .then(url => {
           Clipboard.copyToSystem(url);
         });
@@ -819,7 +818,7 @@ function addCommands(
       return settingRegistry
         .set('@swan/filebrowser-extension:browser', key, value)
         .catch((reason: Error) => {
-          console.error(`Failed to set navigateToCurrentDirectory setting`);
+          console.error('Failed to set navigateToCurrentDirectory setting');
         });
     }
   });

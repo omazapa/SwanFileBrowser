@@ -1,22 +1,16 @@
 // Copyright (c) SWAN Development Team.
 // Author: Omar.Zapata@cern.ch 2021
-import {
-  FilterFileBrowserModel,
-    FileBrowser
-  } from '@jupyterlab/filebrowser';
-import { request } from "./request";
+import { FilterFileBrowserModel, FileBrowser } from '@jupyterlab/filebrowser';
+import { request } from './request';
 
-export class SwanFileBrowserModel extends FilterFileBrowserModel
-{
+export class SwanFileBrowserModel extends FilterFileBrowserModel {
   constructor(options: FilterFileBrowserModel.IOptions) {
-    super(options)
+    super(options);
     this.kernelSpecSetPathRequest(this.path);
-
   }
 
-  protected kernelSpecSetPathRequest(path:string):any
-  {
-    const dataToSend = {'path':path,'caller':'swanfilebrowser'};
+  protected kernelSpecSetPathRequest(path: string): any {
+    const dataToSend = { path: path, caller: 'swanfilebrowser' };
     try {
       return request<any>('/swan/kernelspec/set', {
         body: JSON.stringify(dataToSend),
@@ -32,17 +26,15 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel
     }
   }
   async cd(newValue = '.'): Promise<void> {
-    return super.cd(newValue).then(async ()=>{
-        await this.kernelSpecSetPathRequest(this.path); 
-    })
+    return super.cd(newValue).then(async () => {
+      await this.kernelSpecSetPathRequest(this.path);
+    });
   }
 }
 
-
-export class SwanFileBrowser extends FileBrowser{
+export class SwanFileBrowser extends FileBrowser {
   constructor(options: FileBrowser.IOptions) {
     super(options);
-    super.id = options.id;    
-
+    super.id = options.id;
   }
 }
