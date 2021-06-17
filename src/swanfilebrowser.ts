@@ -17,13 +17,10 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
         body: JSON.stringify(dataToSend),
         method: 'POST'
       }).then(async (rvalue: { is_project: boolean; path: string }) => {
-        console.log(rvalue);
         await request<any>('/api/kernelspecs', {
           method: 'GET'
         })
           .then(specs => {
-            console.log('retques');
-            console.log(specs);
             //https://stackoverflow.com/questions/46634876/how-can-i-change-a-readonly-property-in-typescript
             //I need to reset this to null if it is not a project
             //supported by all browsers
@@ -52,7 +49,6 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
             }
           })
           .catch((err: any) => {
-            console.log('catch');
             console.log(err);
           });
         return rvalue;
@@ -65,11 +61,7 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
   }
   async cd(newValue: string): Promise<void> {
     return super.cd(newValue).then(async () => {
-      await this.kernelSpecSetPathRequest(this.path).then(() => {
-        // this.manager.services.kernelspecs.refreshSpecs();
-      });
-      console.log('on cd: this.manager.services.kernelspecs.specs');
-      console.log(this.manager.services.kernelspecs.specs);
+      await this.kernelSpecSetPathRequest(this.path);
     });
   }
 }

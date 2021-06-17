@@ -1,6 +1,6 @@
 {
   "name": "@swan/filebrowser-extension",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "JupyterLab - SWAN Filebrowser Widget Extension",
   "homepage": "https://github.com/swan-cern/jupyter-extensions",
   "bugs": {
