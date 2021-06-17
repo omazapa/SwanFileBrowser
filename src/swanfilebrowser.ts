@@ -17,7 +17,7 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
         body: JSON.stringify(dataToSend),
         method: 'POST'
       }).then(async (rvalue: { is_project: boolean; path: string }) => {
-        await request<any>('/api/kernelspecs', {
+        return request<any>('/api/kernelspecs', {
           method: 'GET'
         })
           .then(specs => {
@@ -29,16 +29,17 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
             // calling this.manager.services.kernelspecs.refreshSpecs()  was not working when I am outside the project folder
             // it was taking the previuos set of kernels and I need to reset it to null.
             if (rvalue.is_project) {
-              Object.defineProperty(
+              const validate_specs = validateSpecModels(specs);
+              return Object.defineProperty(
                 this.manager.services.kernelspecs,
                 'specs',
                 {
-                  value: validateSpecModels(specs),
+                  value: validate_specs,
                   configurable: true
                 }
               );
             } else {
-              Object.defineProperty(
+              return Object.defineProperty(
                 this.manager.services.kernelspecs,
                 'specs',
                 {
@@ -51,7 +52,6 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
           .catch((err: any) => {
             console.log(err);
           });
-        return rvalue;
       });
     } catch (reason) {
       console.error(
