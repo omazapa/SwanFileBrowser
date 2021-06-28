@@ -26,7 +26,6 @@ import { PageConfig, PathExt, URLExt } from '@jupyterlab/coreutils';
 import { IDocumentManager } from '@jupyterlab/docmanager';
 
 import {
-  FileBrowser,
   FileUploadStatus,
   IFileBrowserFactory
 } from '@jupyterlab/filebrowser';
@@ -806,7 +805,7 @@ function addCommands(
 
   commands.addCommand(CommandIDs.createLauncher, {
     label: 'New Launcher',
-    execute: () => Private.createLauncher(commands, <FileBrowser>browser)
+    execute: () => Private.createLauncher(commands, <SwanFileBrowser>browser)
   });
 
   commands.addCommand(CommandIDs.toggleNavigateToCurrentDirectory, {
@@ -1091,11 +1090,11 @@ namespace Private {
         return;
       }
 
-      return browserForPath;
+      return <SwanFileBrowser>browserForPath;
     }
 
     // if driveName is empty, assume the main filebrowser
-    return browser;
+    return <SwanFileBrowser>browser;
   }
 
   /**

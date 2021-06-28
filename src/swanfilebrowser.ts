@@ -3,6 +3,7 @@
 import { FilterFileBrowserModel, FileBrowser } from '@jupyterlab/filebrowser';
 import { request } from './request';
 import { validateSpecModels } from './kernelspec/validate';
+import { DirListing } from './listing';
 
 export class SwanFileBrowserModel extends FilterFileBrowserModel {
   constructor(options: FilterFileBrowserModel.IOptions) {
@@ -61,6 +62,16 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
   }
   async cd(newValue: string): Promise<void> {
     return super.cd(newValue).then(async () => {
+
+      if(this.path === "SWAN_projects")
+      {
+        return request<any>('/api/kernelspecs', {
+          method: 'GET'
+        })
+          .then(contents => {
+            console.log(contents);
+          });
+      }
       await this.kernelSpecSetPathRequest(this.path);
     });
   }
@@ -70,5 +81,35 @@ export class SwanFileBrowser extends FileBrowser {
   constructor(options: FileBrowser.IOptions) {
     super(options);
     super.id = options.id;
+    const model = (this.model = <SwanFileBrowserModel>options.model);
+    const renderer = options.renderer;
+    
+    
+    this.listing = new DirListing({
+      model,
+      renderer,
+        translator: this.translator
+      });
+
+    // this.listing = this.createDirListing({
+    //   model,
+    //   renderer,
+    //   translator: this.translator
+    // });
   }
+
+  /**
+   * Create the underlying DirListing instance.
+   *
+   * @param options - The DirListing constructor options.
+   *
+   * @returns The created DirListing instance.
+   */
+  //  protected createDirListing(options: DirListing.IOptions): DirListing {
+  //   return new DirListing(options);
+  // }
+
+  public listing: DirListing;
+  public model: SwanFileBrowserModel;
+
 }
