@@ -65,12 +65,12 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
 
       if(this.path === "SWAN_projects")
       {
-        return request<any>('/api/kernelspecs', {
-          method: 'GET'
-        })
-          .then(contents => {
-            console.log(contents);
-          });
+        // return request<any>('/api/contents/'+this.path, {
+        //   method: 'GET'
+        // })
+        //   .then(contents => {
+        //     console.log(contents);
+        //   });
       }
       await this.kernelSpecSetPathRequest(this.path);
     });
