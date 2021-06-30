@@ -1,3 +1,12 @@
+
+.jp-DirListing-project-itemIcon .fm5u5yq *
+{
+    display: none;
+}
+
+span[is_project="true"] {
+    display: none;
+} 
 /* .jp-DirListing-item.jp-mod-running .jp-DirListing-itemIcon:before  svg {
     display: none;
     width: 500px;

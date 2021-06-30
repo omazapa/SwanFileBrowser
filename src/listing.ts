@@ -23,7 +23,8 @@ import {
 import {
   caretDownIcon,
   caretUpIcon,
-  classes,
+  // classes,
+  folderIcon,
   // folderIcon,
   LabIcon
 } from '@jupyterlab/ui-components';
@@ -229,15 +230,15 @@ const FACTORY_MIME = 'application/vnd.lumino.widget-factory';
 /**
  * A widget which hosts a file list area.
  */
-export class DirListing extends Widget {
+export class SwanDirListing extends Widget {
   /**
    * Construct a new file browser directory listing widget.
    *
    * @param model - The file browser view model.
    */
-  constructor(options: DirListing.IOptions) {
+  constructor(options: SwanDirListing.IOptions) {
     super({
-      node: (options.renderer || DirListing.defaultRenderer).createNode()
+      node: (options.renderer || SwanDirListing.defaultRenderer).createNode()
     });
     this.addClass(DIR_LISTING_CLASS);
     this.translator = options.translator || nullTranslator;
@@ -249,7 +250,7 @@ export class DirListing extends Widget {
     this._editNode = document.createElement('input');
     this._editNode.className = EDITOR_CLASS;
     this._manager = this._model.manager;
-    this._renderer = options.renderer || DirListing.defaultRenderer;
+    this._renderer = options.renderer || SwanDirListing.defaultRenderer;
 
     const headerNode = DOMUtils.findElement(this.node, HEADER_CLASS);
     this._renderer.populateHeaderNode(
@@ -304,21 +305,21 @@ export class DirListing extends Widget {
   /**
    * The renderer instance used by the directory listing.
    */
-  get renderer(): DirListing.IRenderer {
+  get renderer(): SwanDirListing.IRenderer {
     return this._renderer;
   }
 
   /**
    * The current sort state.
    */
-  get sortState(): DirListing.ISortState {
+  get sortState(): SwanDirListing.ISortState {
     return this._sortState;
   }
 
   /**
    * A signal fired when an item is opened.
    */
-  get onItemOpened(): ISignal<DirListing, Contents.IModel> {
+  get onItemOpened(): ISignal<SwanDirListing, Contents.IModel> {
     return this._onItemOpened;
   }
 
@@ -344,7 +345,7 @@ export class DirListing extends Widget {
   /**
    * Sort the items using a sort condition.
    */
-  sort(state: DirListing.ISortState): void {
+  sort(state: SwanDirListing.ISortState): void {
     this._sortedItems = Private.sort(this.model.items(), state);
     this._sortState = state;
     this.update();
@@ -796,17 +797,17 @@ export class DirListing extends Widget {
    * A handler invoked on an `'update-request'` message.
    */
   protected onUpdateRequest(msg: Message): void {
-    this._isDirty = true;
+    this._isDirty = false;
     // console.log(msg);
     // Fetch common variables.
     const items = this._sortedItems;
     const nodes = this._items;
     const content = DOMUtils.findElement(this.node, CONTENT_CLASS);
     const renderer = this._renderer;
-    console.log("---1")
-    console.log(nodes);
-    console.log("---2")
-    console.log(items);
+    // console.log("---1")
+    // console.log(nodes);
+    // console.log("---2")
+    // console.log(items);
 
     this.removeClass(MULTI_SELECTED_CLASS);
     this.removeClass(SELECTED_CLASS);
@@ -845,11 +846,13 @@ export class DirListing extends Widget {
       {
         let ft = this._manager.registry.getFileTypeForModel(item) as SWANIFileType;
         ft.icon = swanProjectIcon;
-        const nft = <DocumentRegistry.IFileType>ft;
+        // const nft = <DocumentRegistry.IFileType>ft;
+        //const ft = this._manager.registry.getFileTypeForModel(item);
+        
         renderer.updateItemNode(
           node,
           item,
-          nft,
+          ft,
           this.translator,
           this._hiddenColumns,
           true
@@ -928,7 +931,7 @@ export class DirListing extends Widget {
     this.toggleClass('jp-DirListing-narrow', width < 250);
   }
 
-  setColumnVisibility(name: DirListing.ToggleableColumn, visible: boolean) {
+  setColumnVisibility(name: SwanDirListing.ToggleableColumn, visible: boolean) {
     if (visible) {
       this._hiddenColumns.delete(name);
     } else {
@@ -1384,7 +1387,7 @@ export class DirListing extends Widget {
         withContent: async () => {
           return await services.contents.get(item.path);
         }
-      } as DirListing.IContentsThunk);
+      } as SwanDirListing.IContentsThunk);
     }
 
     if (item && item.type !== 'directory') {
@@ -1738,11 +1741,11 @@ export class DirListing extends Widget {
   private _editNode: HTMLInputElement;
   private _items: HTMLElement[] = [];
   private _sortedItems: Contents.IModel[] = [];
-  private _sortState: DirListing.ISortState = {
+  private _sortState: SwanDirListing.ISortState = {
     direction: 'ascending',
     key: 'name'
   };
-  private _onItemOpened = new Signal<DirListing, Contents.IModel>(this);
+  private _onItemOpened = new Signal<SwanDirListing, Contents.IModel>(this);
   private _drag: Drag | null = null;
   private _dragData: {
     pressX: number;
@@ -1756,18 +1759,18 @@ export class DirListing extends Widget {
   private _manager: IDocumentManager;
   private _softSelection = '';
   protected selection: { [key: string]: boolean } = Object.create(null);
-  private _renderer: DirListing.IRenderer;
+  private _renderer: SwanDirListing.IRenderer;
   private _searchPrefix: string = '';
   private _searchPrefixTimer = -1;
   private _inRename = false;
   private _isDirty = false;
-  private _hiddenColumns = new Set<DirListing.ToggleableColumn>();
+  private _hiddenColumns = new Set<SwanDirListing.ToggleableColumn>();
 }
 
 /**
  * The namespace for the `DirListing` class statics.
  */
-export namespace DirListing {
+export namespace SwanDirListing {
   /**
    * An options object for initializing a file browser directory listing.
    */
@@ -1846,7 +1849,7 @@ export namespace DirListing {
     populateHeaderNode(
       node: HTMLElement,
       translator?: ITranslator,
-      hiddenColumns?: Set<DirListing.ToggleableColumn>
+      hiddenColumns?: Set<SwanDirListing.ToggleableColumn>
     ): void;
 
     /**
@@ -1866,7 +1869,7 @@ export namespace DirListing {
      * @returns A new DOM node to use as a content item.
      */
     createItemNode(
-      hiddenColumns?: Set<DirListing.ToggleableColumn>,
+      hiddenColumns?: Set<SwanDirListing.ToggleableColumn>,
       isProject?: boolean
     ): HTMLElement;
 
@@ -1884,7 +1887,7 @@ export namespace DirListing {
       model: Contents.IModel,
       fileType?: DocumentRegistry.IFileType,
       translator?: ITranslator,
-      hiddenColumns?: Set<DirListing.ToggleableColumn>,
+      hiddenColumns?: Set<SwanDirListing.ToggleableColumn>,
       isproject?: boolean
     ): void;
 
@@ -1912,7 +1915,8 @@ export namespace DirListing {
       node: HTMLElement,
       count: number,
       trans: TranslationBundle,
-      fileType?: DocumentRegistry.IFileType
+      fileType?: DocumentRegistry.IFileType,
+      isProject?: boolean
     ): HTMLElement;
   }
 
@@ -1943,7 +1947,7 @@ export namespace DirListing {
     populateHeaderNode(
       node: HTMLElement,
       translator?: ITranslator,
-      hiddenColumns?: Set<DirListing.ToggleableColumn>
+      hiddenColumns?: Set<SwanDirListing.ToggleableColumn>
     ): void {
       translator = translator || nullTranslator;
       const trans = translator.load('jupyterlab');
@@ -2049,7 +2053,7 @@ export namespace DirListing {
      * @returns A new DOM node to use as a content item.
      */
     createItemNode(
-      hiddenColumns?: Set<DirListing.ToggleableColumn>,
+      hiddenColumns?: Set<SwanDirListing.ToggleableColumn>,
       isProject?:boolean
     ): HTMLElement {
       const node = document.createElement('li');
@@ -2059,8 +2063,21 @@ export namespace DirListing {
       if(isProject)
       {
         icon.className = ITEM_PROJECT_ICON_CLASS;
+        icon.setAttribute(
+          'is_project','true'
+        );
+        node.setAttribute(
+          'is_project','true'
+        );
+  
       }else{
         icon.className = ITEM_ICON_CLASS;
+        icon.setAttribute(
+          'is_project','false'
+        );
+        node.setAttribute(
+          'is_project','false'
+        );
       }
       console.log("---.3")
       console.log(node);
@@ -2074,7 +2091,6 @@ export namespace DirListing {
       node.appendChild(modified);
       console.log("---.5")
       console.log(node);
-
       // Make the text note focusable so that it receives keyboard events;
       // text node was specifically chosen to receive shortcuts because
       // text element gets substituted with input area during file name edits
@@ -2104,25 +2120,23 @@ export namespace DirListing {
       model: Contents.IModel,
       fileType?: DocumentRegistry.IFileType,
       translator?: ITranslator,
-      hiddenColumns?: Set<DirListing.ToggleableColumn>,
-      isProject?:boolean
+      hiddenColumns?: Set<SwanDirListing.ToggleableColumn>,
+      isProject:boolean = false
     ): void {
       translator = translator || nullTranslator;
 
       fileType =
         fileType || DocumentRegistry.getDefaultTextFileType(translator);
-      const {icon, iconClass, name } = fileType;
+      const { name } = fileType;
       translator = translator || nullTranslator;
       const trans = translator.load('jupyterlab');
       let iconContainer=null;
-      if(isProject)
-      {
-        iconContainer = DOMUtils.findElement(node, ITEM_PROJECT_ICON_CLASS);
-        iconContainer.className = ITEM_PROJECT_ICON_CLASS;
-      }else{
+      // if(isProject)
+      // {
+      //   iconContainer = DOMUtils.findElement(node, ITEM_PROJECT_ICON_CLASS);
+      // }else{
         iconContainer = DOMUtils.findElement(node, ITEM_ICON_CLASS);
-        iconContainer.className = ITEM_ICON_CLASS;
-      }
+      // }
       console.log(iconContainer);
       const text = DOMUtils.findElement(node, ITEM_TEXT_CLASS);
       const modified = DOMUtils.findElement(node, ITEM_MODIFIED_CLASS);
@@ -2135,24 +2149,34 @@ export namespace DirListing {
 
       if(isProject)
       {
-        // render the file item's icon
-        LabIcon.resolveElement({
-        icon,
-        iconClass: classes(iconClass, 'jp-Icon'),
-        container: iconContainer,
-        className: ITEM_PROJECT_ICON_CLASS,
-        stylesheet: 'listing'
+        // // render the file item's icon
+        // LabIcon.resolveElement({
+        // icon,
+        // iconClass: classes(iconClass, 'jp-Icon'),
+        // container: iconContainer,
+        // className: ITEM_PROJECT_ICON_CLASS,
+        // stylesheet: 'listing'
+        // });
+        swanProjectIcon.element({
+          container: iconContainer,
+          className: ITEM_PROJECT_ICON_CLASS,
+          stylesheet: 'listing'
         });
-
       }else{
         // render the file item's icon
-        LabIcon.resolveElement({
-          icon,
-          iconClass: classes(iconClass, 'jp-Icon'),
+        // LabIcon.resolveElement({
+        //   icon,
+        //   iconClass: classes(iconClass, 'jp-Icon'),
+        //   container: iconContainer,
+        //   className: ITEM_ICON_CLASS,
+        //   stylesheet: 'listing'
+        // });
+        folderIcon.element({
           container: iconContainer,
           className: ITEM_ICON_CLASS,
           stylesheet: 'listing'
         });
+
       }
 
       let hoverText = trans.__('Name: %1', model.name);
@@ -2241,7 +2265,16 @@ export namespace DirListing {
     ): HTMLElement {
       const dragImage = node.cloneNode(true) as HTMLElement;
       const modified = DOMUtils.findElement(dragImage, ITEM_MODIFIED_CLASS);
-      const icon = DOMUtils.findElement(dragImage, ITEM_ICON_CLASS);
+      console.log("-----drag");
+      console.log(node);
+      const isProject = node.getAttribute("is_project");
+      let icon = null;
+      if(isProject === "true")
+      {
+        icon = DOMUtils.findElement(dragImage, ITEM_PROJECT_ICON_CLASS);
+      }else{
+        icon = DOMUtils.findElement(dragImage, ITEM_ICON_CLASS);
+      }
       dragImage.removeChild(modified as HTMLElement);
 
       if (!fileType) {
@@ -2351,7 +2384,7 @@ namespace Private {
    */
   export function sort(
     items: IIterator<Contents.IModel>,
-    state: DirListing.ISortState
+    state: SwanDirListing.ISortState
   ): Contents.IModel[] {
     const copy = toArray(items);
     const reverse = state.direction === 'descending' ? 1 : -1;

@@ -3,7 +3,7 @@
 import { FilterFileBrowserModel, FileBrowser } from '@jupyterlab/filebrowser';
 import { request } from './request';
 import { validateSpecModels } from './kernelspec/validate';
-import { DirListing } from './listing';
+import { SwanDirListing } from './listing';
 
 export class SwanFileBrowserModel extends FilterFileBrowserModel {
   constructor(options: FilterFileBrowserModel.IOptions) {
@@ -83,19 +83,20 @@ export class SwanFileBrowser extends FileBrowser {
     super.id = options.id;
     const model = (this.model = <SwanFileBrowserModel>options.model);
     const renderer = options.renderer;
+    // const translator = options.translator;
     
     
-    this.listing = new DirListing({
-      model,
-      renderer,
-        translator: this.translator
-      });
-
-    // this.listing = this.createDirListing({
+    // this.listing = new SwanDirListing({
     //   model,
     //   renderer,
-    //   translator: this.translator
-    // });
+    //     translator: this.translator
+    //   });
+
+    this.listing = this.createDirListing({
+      model,
+      renderer,
+      translator: this.translator
+    });
   }
 
   /**
@@ -105,11 +106,11 @@ export class SwanFileBrowser extends FileBrowser {
    *
    * @returns The created DirListing instance.
    */
-  //  protected createDirListing(options: DirListing.IOptions): DirListing {
-  //   return new DirListing(options);
-  // }
+   protected createDirListing(options: SwanDirListing.IOptions): SwanDirListing {
+    return new SwanDirListing(options);
+  }
 
-  public listing: DirListing;
+  public listing: SwanDirListing;
   public model: SwanFileBrowserModel;
 
 }
