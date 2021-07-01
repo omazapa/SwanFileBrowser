@@ -3,7 +3,10 @@
 import { FilterFileBrowserModel, FileBrowser } from '@jupyterlab/filebrowser';
 import { request } from './request';
 import { validateSpecModels } from './kernelspec/validate';
+//import { SwanDirListing, SwanRenderer } from './listing';
 import { SwanDirListing } from './listing';
+import { DirListing } from '@jupyterlab/filebrowser';
+
 
 export class SwanFileBrowserModel extends FilterFileBrowserModel {
   constructor(options: FilterFileBrowserModel.IOptions) {
@@ -62,16 +65,6 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
   }
   async cd(newValue: string): Promise<void> {
     return super.cd(newValue).then(async () => {
-
-      if(this.path === "SWAN_projects")
-      {
-        // return request<any>('/api/contents/'+this.path, {
-        //   method: 'GET'
-        // })
-        //   .then(contents => {
-        //     console.log(contents);
-        //   });
-      }
       await this.kernelSpecSetPathRequest(this.path);
     });
   }
@@ -79,24 +72,21 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
 
 export class SwanFileBrowser extends FileBrowser {
   constructor(options: FileBrowser.IOptions) {
+    //super({...options,renderer:new SwanRenderer()});
     super(options);
-    super.id = options.id;
+    // @ts-ignore
     const model = (this.model = <SwanFileBrowserModel>options.model);
     const renderer = options.renderer;
-    // const translator = options.translator;
-    
-    
-    // this.listing = new SwanDirListing({
-    //   model,
-    //   renderer,
-    //     translator: this.translator
-    //   });
 
-    this.listing = this.createDirListing({
+    this.listing = new SwanDirListing({
       model,
       renderer,
       translator: this.translator
     });
+
+    // @ts-ignore
+    this.layout.removeWidget(this._listing);
+    this.layout.addWidget(this.listing);
   }
 
   /**
@@ -106,11 +96,11 @@ export class SwanFileBrowser extends FileBrowser {
    *
    * @returns The created DirListing instance.
    */
-   protected createDirListing(options: SwanDirListing.IOptions): SwanDirListing {
+   protected createDirListing(options: DirListing.IOptions): SwanDirListing {
     return new SwanDirListing(options);
   }
 
   public listing: SwanDirListing;
-  public model: SwanFileBrowserModel;
+  // public model: SwanFileBrowserModel;
 
 }
