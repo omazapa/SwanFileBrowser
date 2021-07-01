@@ -62,9 +62,7 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
   }
   async cd(newValue: string): Promise<void> {
     return super.cd(newValue).then(async () => {
-
-      if(this.path === "SWAN_projects")
-      {
+      if (this.path === 'SWAN_projects') {
         // return request<any>('/api/contents/'+this.path, {
         //   method: 'GET'
         // })
@@ -83,20 +81,17 @@ export class SwanFileBrowser extends FileBrowser {
     super.id = options.id;
     const model = (this.model = <SwanFileBrowserModel>options.model);
     const renderer = options.renderer;
-    // const translator = options.translator;
-    
-    
-    // this.listing = new SwanDirListing({
-    //   model,
-    //   renderer,
-    //     translator: this.translator
-    //   });
 
-    this.listing = this.createDirListing({
+    // @ts-ignore
+    this.layout.removeWidget(this._listing);
+    // @ts-ignore
+    this._listing = this.createDirListing({
       model,
       renderer,
       translator: this.translator
     });
+    // @ts-ignore
+    this.layout.addWidget(this._listing);
   }
 
   /**
@@ -106,11 +101,10 @@ export class SwanFileBrowser extends FileBrowser {
    *
    * @returns The created DirListing instance.
    */
-   protected createDirListing(options: SwanDirListing.IOptions): SwanDirListing {
+  protected createDirListing(options: SwanDirListing.IOptions): SwanDirListing {
     return new SwanDirListing(options);
   }
 
-  public listing: SwanDirListing;
+  // public listing: SwanDirListing;
   public model: SwanFileBrowserModel;
-
 }

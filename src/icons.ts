@@ -6,4 +6,3 @@ export const swanProjectIcon = new LabIcon({
   name: 'ui-components:folder-project',
   svgstr: swanProjectIconStr
 });
-

@@ -23,9 +23,7 @@ import {
 import {
   caretDownIcon,
   caretUpIcon,
-  // classes,
-  folderIcon,
-  // folderIcon,
+  classes,
   LabIcon
 } from '@jupyterlab/ui-components';
 import {
@@ -46,35 +44,29 @@ import { ISignal, Signal } from '@lumino/signaling';
 import { h, VirtualDOM } from '@lumino/virtualdom';
 import { Widget } from '@lumino/widgets';
 import { swanProjectIcon } from './icons';
-// import { swanProjectIcon } from './icons';
 import { SwanFileBrowserModel } from './swanfilebrowser';
-// import { swanProjectIcon} from './icons'
-// import {
-//   folderIcon,
-// } from '@jupyterlab/ui-components';
 
-export interface SWANIModel{
-  content: Object | null, 
-  created: string, 
-  format: string | null, 
-  is_project: boolean,
-  last_modified: string,
-  mimetype: string|null,
-  name: string,
-  path: string,
-  size: number,
-  type: string,
-  writable: boolean
-};
-export interface SWANIFileType
-{
-  contentType: any,
-  displayName: string,
-  extensions: any,
-  fileFormat: any,
-  icon: any, 
-  mimeTypes: any,
-  name: string  
+export interface SWANIModel {
+  content: Object | null;
+  created: string;
+  format: string | null;
+  is_project: boolean;
+  last_modified: string;
+  mimetype: string | null;
+  name: string;
+  path: string;
+  size: number;
+  type: string;
+  writable: boolean;
+}
+export interface SWANIFileType {
+  contentType: any;
+  displayName: string;
+  extensions: any;
+  fileFormat: any;
+  icon: any;
+  mimeTypes: any;
+  name: string;
 }
 
 /**
@@ -120,12 +112,12 @@ const ITEM_TEXT_CLASS = 'jp-DirListing-itemText';
 /**
  * The class name added to the listing item icon cell.
  */
- const ITEM_ICON_CLASS = 'jp-DirListing-itemIcon';
+const ITEM_ICON_CLASS = 'jp-DirListing-itemIcon';
 
- /**
+/**
  * The class name added to the listing item icon cell.
  */
- const ITEM_PROJECT_ICON_CLASS = 'jp-DirListing-project-itemIcon';
+const ITEM_PROJECT_ICON_CLASS = 'jp-DirListing-project-itemIcon';
 
 /**
  * The class name added to the listing item modified cell.
@@ -654,7 +646,7 @@ export class SwanDirListing extends Widget {
    *
    * @returns A promise that resolves when the name is selected.
    */
-  async selectItemByName(name: string, focus: boolean = false): Promise<void> {
+  async selectItemByName(name: string, focus = false): Promise<void> {
     // Make sure the file is available.
     await this.model.refresh();
 
@@ -798,16 +790,11 @@ export class SwanDirListing extends Widget {
    */
   protected onUpdateRequest(msg: Message): void {
     this._isDirty = false;
-    // console.log(msg);
     // Fetch common variables.
     const items = this._sortedItems;
     const nodes = this._items;
     const content = DOMUtils.findElement(this.node, CONTENT_CLASS);
     const renderer = this._renderer;
-    // console.log("---1")
-    // console.log(nodes);
-    // console.log("---2")
-    // console.log(items);
 
     this.removeClass(MULTI_SELECTED_CLASS);
     this.removeClass(SELECTED_CLASS);
@@ -817,17 +804,12 @@ export class SwanDirListing extends Widget {
       content.removeChild(nodes.pop()!);
     }
 
-    let counter=0;
     // Add any missing item nodes.
     while (nodes.length < items.length) {
-      let item = items[counter] as SWANIModel;
-      const node = renderer.createItemNode(this._hiddenColumns,item.is_project);
+      const node = renderer.createItemNode(this._hiddenColumns);
       node.classList.add(ITEM_CLASS);
       nodes.push(node);
       content.appendChild(node);
-      counter++;
-      // console.log("---3")
-      // console.log(node);
     }
 
     // Remove extra classes from the nodes.
@@ -836,39 +818,28 @@ export class SwanDirListing extends Widget {
       item.classList.remove(RUNNING_CLASS);
       item.classList.remove(CUT_CLASS);
     });
-    
+
     // Add extra classes to item nodes based on widget state.
     items.forEach((item, i) => {
       const node = nodes[i];
-      // console.log(node)
+      const ft = this._manager.registry.getFileTypeForModel(item);
       const swan_item = item as SWANIModel;
-      if(this.model.path === 'SWAN_projects' && swan_item.is_project === true )
-      {
-        let ft = this._manager.registry.getFileTypeForModel(item) as SWANIFileType;
-        ft.icon = swanProjectIcon;
-        // const nft = <DocumentRegistry.IFileType>ft;
-        //const ft = this._manager.registry.getFileTypeForModel(item);
-        
-        renderer.updateItemNode(
-          node,
-          item,
-          ft,
-          this.translator,
-          this._hiddenColumns,
-          true
-        );  
-      }else{
-        const ft = this._manager.registry.getFileTypeForModel(item);
-        renderer.updateItemNode(
-          node,
-          item,
-          ft,
-          this.translator,
-          this._hiddenColumns,
-          false
-        );  
-      }    
-      // console.log(node); 
+      let is_project = false;
+      if (
+        this.model.path === 'SWAN_projects' &&
+        swan_item.is_project === true &&
+        swan_item.type === 'directory'
+      ) {
+        is_project = true;
+      }
+      renderer.updateItemNode(
+        node,
+        item,
+        ft,
+        this.translator,
+        this._hiddenColumns,
+        is_project
+      );
       if (this.selection[item.path]) {
         node.classList.add(SELECTED_CLASS);
 
@@ -876,15 +847,6 @@ export class SwanDirListing extends Widget {
           node.classList.add(CUT_CLASS);
         }
       }
-      // if(this.model.path ==='SWAN_projects' && swan_item.is_project === true )
-      // {
-      //   // add metadata to the node
-      //   node.setAttribute(
-      //     'isproject',
-      //     'true'
-      //   );
-      //   console.log(node)
-      // }
       // add metadata to the node
       node.setAttribute(
         'data-isdir',
@@ -921,8 +883,6 @@ export class SwanDirListing extends Widget {
     });
 
     this._prevPath = this._model.path;
-
-    
   }
 
   onResize(msg: Widget.ResizeMessage) {
@@ -989,7 +949,7 @@ export class SwanDirListing extends Widget {
       }
     }
 
-    let index = Private.hitTestNodes(this._items, event);
+    const index = Private.hitTestNodes(this._items, event);
 
     if (index === -1) {
       return;
@@ -1202,7 +1162,7 @@ export class SwanDirListing extends Widget {
       return;
     }
     for (let i = 0; i < length; i++) {
-      let entry = event.dataTransfer?.items[i].webkitGetAsEntry();
+      const entry = event.dataTransfer?.items[i].webkitGetAsEntry();
       if (entry.isDirectory) {
         console.log('currently not supporting drag + drop for folders');
         void showDialog({
@@ -1649,11 +1609,7 @@ export class SwanDirListing extends Widget {
   /**
    * Select a given item.
    */
-  private _selectItem(
-    index: number,
-    keepExisting: boolean,
-    focus: boolean = true
-  ) {
+  private _selectItem(index: number, keepExisting: boolean, focus = true) {
     // Selected the given row(s)
     const items = this._sortedItems;
     if (!keepExisting) {
@@ -1760,7 +1716,7 @@ export class SwanDirListing extends Widget {
   private _softSelection = '';
   protected selection: { [key: string]: boolean } = Object.create(null);
   private _renderer: SwanDirListing.IRenderer;
-  private _searchPrefix: string = '';
+  private _searchPrefix = '';
   private _searchPrefixTimer = -1;
   private _inRename = false;
   private _isDirty = false;
@@ -2053,44 +2009,20 @@ export namespace SwanDirListing {
      * @returns A new DOM node to use as a content item.
      */
     createItemNode(
-      hiddenColumns?: Set<SwanDirListing.ToggleableColumn>,
-      isProject?:boolean
+      hiddenColumns?: Set<SwanDirListing.ToggleableColumn>
     ): HTMLElement {
       const node = document.createElement('li');
-      let icon = document.createElement('span');
+      const icon = document.createElement('span');
       const text = document.createElement('span');
       const modified = document.createElement('span');
-      if(isProject)
-      {
-        icon.className = ITEM_PROJECT_ICON_CLASS;
-        icon.setAttribute(
-          'is_project','true'
-        );
-        node.setAttribute(
-          'is_project','true'
-        );
-  
-      }else{
-        icon.className = ITEM_ICON_CLASS;
-        icon.setAttribute(
-          'is_project','false'
-        );
-        node.setAttribute(
-          'is_project','false'
-        );
-      }
-      console.log("---.3")
-      console.log(node);
-      console.log("---.4")
-      console.log(icon);
-      
+      icon.className = ITEM_ICON_CLASS;
+
       text.className = ITEM_TEXT_CLASS;
       modified.className = ITEM_MODIFIED_CLASS;
       node.appendChild(icon);
       node.appendChild(text);
       node.appendChild(modified);
-      console.log("---.5")
-      console.log(node);
+
       // Make the text note focusable so that it receives keyboard events;
       // text node was specifically chosen to receive shortcuts because
       // text element gets substituted with input area during file name edits
@@ -2121,23 +2053,16 @@ export namespace SwanDirListing {
       fileType?: DocumentRegistry.IFileType,
       translator?: ITranslator,
       hiddenColumns?: Set<SwanDirListing.ToggleableColumn>,
-      isProject:boolean = false
+      isProject = false
     ): void {
       translator = translator || nullTranslator;
 
       fileType =
         fileType || DocumentRegistry.getDefaultTextFileType(translator);
-      const { name } = fileType;
+      const { icon, iconClass, name } = fileType;
       translator = translator || nullTranslator;
       const trans = translator.load('jupyterlab');
-      let iconContainer=null;
-      // if(isProject)
-      // {
-      //   iconContainer = DOMUtils.findElement(node, ITEM_PROJECT_ICON_CLASS);
-      // }else{
-        iconContainer = DOMUtils.findElement(node, ITEM_ICON_CLASS);
-      // }
-      console.log(iconContainer);
+      const iconContainer = DOMUtils.findElement(node, ITEM_ICON_CLASS);
       const text = DOMUtils.findElement(node, ITEM_TEXT_CLASS);
       const modified = DOMUtils.findElement(node, ITEM_MODIFIED_CLASS);
 
@@ -2147,8 +2072,7 @@ export namespace SwanDirListing {
         modified.classList.remove(MODIFIED_COLUMN_HIDDEN);
       }
 
-      if(isProject)
-      {
+      if (isProject) {
         // // render the file item's icon
         // LabIcon.resolveElement({
         // icon,
@@ -2159,24 +2083,18 @@ export namespace SwanDirListing {
         // });
         swanProjectIcon.element({
           container: iconContainer,
-          className: ITEM_PROJECT_ICON_CLASS,
+          className: ITEM_ICON_CLASS,
           stylesheet: 'listing'
         });
-      }else{
+      } else {
         // render the file item's icon
-        // LabIcon.resolveElement({
-        //   icon,
-        //   iconClass: classes(iconClass, 'jp-Icon'),
-        //   container: iconContainer,
-        //   className: ITEM_ICON_CLASS,
-        //   stylesheet: 'listing'
-        // });
-        folderIcon.element({
+        LabIcon.resolveElement({
+          icon,
+          iconClass: classes(iconClass, 'jp-Icon'),
           container: iconContainer,
           className: ITEM_ICON_CLASS,
           stylesheet: 'listing'
         });
-
       }
 
       let hoverText = trans.__('Name: %1', model.name);
@@ -2221,7 +2139,11 @@ export namespace SwanDirListing {
       // If an item is being edited currently, its text node is unavailable.
       if (text) {
         const indices = !model.indices ? [] : model.indices;
-        let highlightedName = StringExt.highlight(model.name, indices, h.mark);
+        const highlightedName = StringExt.highlight(
+          model.name,
+          indices,
+          h.mark
+        );
         VirtualDOM.render(h.span(highlightedName), text);
       }
 
@@ -2265,14 +2187,13 @@ export namespace SwanDirListing {
     ): HTMLElement {
       const dragImage = node.cloneNode(true) as HTMLElement;
       const modified = DOMUtils.findElement(dragImage, ITEM_MODIFIED_CLASS);
-      console.log("-----drag");
+      console.log('-----drag');
       console.log(node);
-      const isProject = node.getAttribute("is_project");
+      const isProject = node.getAttribute('is_project');
       let icon = null;
-      if(isProject === "true")
-      {
+      if (isProject === 'true') {
         icon = DOMUtils.findElement(dragImage, ITEM_PROJECT_ICON_CLASS);
-      }else{
+      } else {
         icon = DOMUtils.findElement(dragImage, ITEM_ICON_CLASS);
       }
       dragImage.removeChild(modified as HTMLElement);

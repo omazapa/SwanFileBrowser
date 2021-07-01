@@ -25,10 +25,7 @@ import { PageConfig, PathExt, URLExt } from '@jupyterlab/coreutils';
 
 import { IDocumentManager } from '@jupyterlab/docmanager';
 
-import {
-  FileUploadStatus,
-  IFileBrowserFactory
-} from '@jupyterlab/filebrowser';
+import { FileUploadStatus, IFileBrowserFactory } from '@jupyterlab/filebrowser';
 
 //import { SWANLauncher } from '@swan/launcher';
 
