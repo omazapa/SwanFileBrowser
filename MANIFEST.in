@@ -7,7 +7,7 @@ include package.json
 include install.json
 include ts*.json
 include yarn.lock
-
+include typedoc.json
 graft swanfilebrowser/labextension
 
 # Javascript files
