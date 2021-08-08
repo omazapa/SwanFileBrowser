@@ -46,8 +46,8 @@ import { Widget } from '@lumino/widgets';
 import { swanProjectIcon } from './icons';
 import { SwanFileBrowserModel } from './swanfilebrowser';
 
-export interface SWANIModel {
-  content: Object | null;
+export interface ISwanModel {
+  content: any | null;
   created: string;
   format: string | null;
   is_project: boolean;
@@ -59,7 +59,7 @@ export interface SWANIModel {
   type: string;
   writable: boolean;
 }
-export interface SWANIFileType {
+export interface ISwanFileType {
   contentType: any;
   displayName: string;
   extensions: any;
@@ -634,7 +634,7 @@ export class SwanDirListing extends Widget {
   /**
    * Clear the selected items.
    */
-  clearSelectedItems() {
+  clearSelectedItems(): void {
     this.selection = Object.create(null);
   }
 
@@ -801,7 +801,7 @@ export class SwanDirListing extends Widget {
 
     // Remove any excess item nodes.
     while (nodes.length > items.length) {
-      content.removeChild(nodes.pop()!);
+      content.removeChild(nodes.pop()!); // eslint-disable-line @typescript-eslint/no-non-null-assertion
     }
 
     // Add any missing item nodes.
@@ -823,7 +823,7 @@ export class SwanDirListing extends Widget {
     items.forEach((item, i) => {
       const node = nodes[i];
       const ft = this._manager.registry.getFileTypeForModel(item);
-      const swan_item = item as SWANIModel;
+      const swan_item = item as ISwanModel;
       let is_project = false;
       if (
         this.model.path === 'SWAN_projects' &&
@@ -885,13 +885,16 @@ export class SwanDirListing extends Widget {
     this._prevPath = this._model.path;
   }
 
-  onResize(msg: Widget.ResizeMessage) {
+  onResize(msg: Widget.ResizeMessage): void {
     const { width } =
       msg.width === -1 ? this.node.getBoundingClientRect() : msg;
     this.toggleClass('jp-DirListing-narrow', width < 250);
   }
 
-  setColumnVisibility(name: SwanDirListing.ToggleableColumn, visible: boolean) {
+  setColumnVisibility(
+    name: SwanDirListing.ToggleableColumn,
+    visible: boolean
+  ): void {
     if (visible) {
       this._hiddenColumns.delete(name);
     } else {
@@ -1376,7 +1379,7 @@ export class SwanDirListing extends Widget {
                 void 0,
                 options
               );
-              this._manager.openOrReveal(item!.path);
+              this._manager.openOrReveal(item!.path); // eslint-disable-line @typescript-eslint/no-non-null-assertion
             });
           });
           firstWidgetPlaced.resolve(void 0);

@@ -82,14 +82,19 @@ export class SwanFileBrowser extends FileBrowser {
     const model = (this.model = <SwanFileBrowserModel>options.model);
     const renderer = options.renderer;
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     this.layout.removeWidget(this._listing);
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     this._listing = this.createDirListing({
       model,
       renderer,
       translator: this.translator
     });
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     this.layout.addWidget(this._listing);
   }
