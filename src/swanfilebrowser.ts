@@ -5,15 +5,15 @@ import { request } from './request';
 import { validateSpecModels } from './kernelspec/validate';
 import { SwanDirListing } from './listing';
 import { JSONObject } from '@lumino/coreutils';
-import { showErrorMessage, Dialog} from '@jupyterlab/apputils';
+import { showErrorMessage, Dialog } from '@jupyterlab/apputils';
 
 /**
- * SWAN Project options from .swanproject file plus readme 
+ * SWAN Project options from .swanproject file plus readme
  * this is required to validated that the project file is not corrupted,
- * two special cases are the readme and name that is not part of the the .swanproject file, 
+ * two special cases are the readme and name that is not part of the the .swanproject file,
  * but it is sent in the request.
  */
-export interface ISwanProjectOptions{
+export interface ISwanProjectOptions {
   name?: string;
   stack?: string;
   release?: string;
@@ -82,7 +82,7 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
   }
 
   protected projectInfoRequest(project: string): any {
-    const dataToSend = { path: project, caller:"swanfilebrowser"};
+    const dataToSend = { path: project, caller: 'swanfilebrowser' };
     try {
       return request<any>('swan/project/info', {
         body: JSON.stringify(dataToSend),
@@ -107,70 +107,86 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
     }
   }
 
-  protected isValidProject(project_data:JSONObject):boolean {    
-    for(const tag in this.project_tags)
-    {
+  protected isValidProject(project_data: JSONObject): boolean {
+    for (const tag in this.project_tags) {
       if (!(this.project_tags[tag] in project_data)) {
-        console.log(this.project_tags[tag])
+        console.log(this.project_tags[tag]);
         return false;
       }
     }
-    return true; 
+    return true;
   }
 
-  protected getProjectMissingTags(project_data:JSONObject):string[] {
-    let missing_tags:string[] = []
-    for(const tag in this.project_tags)
-    {
-      if (!(tag in project_data))
-      { 
-        missing_tags.push(tag)
+  protected getProjectMissingTags(project_data: JSONObject): string[] {
+    const missing_tags: string[] = [];
+    for (const tag in this.project_tags) {
+      if (!(tag in project_data)) {
+        missing_tags.push(tag);
       }
     }
     return missing_tags;
   }
 
-
   async cd(newValue: string): Promise<void> {
-    if(newValue !== '.')
-    {
-      let content = await this.contentRequest(newValue);
-      if(content.is_project == true)
-      {
-        let project_info = await this.projectInfoRequest(newValue);
-        console.log("INSIDE PROJECT");
-        const project_data = project_info['project_data'] as ISwanProjectOptions;
-        if(this.isValidProject(project_data as JSONObject))
-        {
+    if (newValue !== '.') {
+      const content = await this.contentRequest(newValue);
+      if (content.is_project === true) {
+        const project_info = await this.projectInfoRequest(newValue);
+        console.log('INSIDE PROJECT');
+        const project_data = project_info[
+          'project_data'
+        ] as ISwanProjectOptions;
+        if (this.isValidProject(project_data as JSONObject)) {
           this.project_options = project_data;
           console.log(this.project_options);
           await this.kernelSpecSetPathRequest(newValue);
           return super.cd(newValue);
-        }else{
+        } else {
           // this.project_options = project_data;
-          let missing_tags = this.getProjectMissingTags(project_data as JSONObject);
-          var available_tags = this.project_tags.filter((item) => !missing_tags.includes(item));
-          let okButton = Dialog.okButton();
-          await showErrorMessage("Project Error:",
-          "The configuration file of the project (.swanproject) is currupted, missing fields are:"+available_tags+". \nThe project can not be opened, do you want to open a Dialog to edit it?",
-          [Dialog.cancelButton(),
-            okButton])
+          const missing_tags = this.getProjectMissingTags(
+            project_data as JSONObject
+          );
+          const available_tags = this.project_tags.filter(
+            item => !missing_tags.includes(item)
+          );
+          const okButton = Dialog.okButton();
+          await showErrorMessage(
+            'Project Error:',
+            'The configuration file of the project (.swanproject) is currupted, missing fields are:' +
+              available_tags +
+              '. \nThe project can not be opened, do you want to open a Dialog to edit it?',
+            [Dialog.cancelButton(), okButton]
+          );
           console.log(okButton.accept);
-          if(okButton.accept)
-          {
+          if (okButton.accept) {
             //TODO
           }
-          return super.cd('.');  // we stay in the current directory to fix the project at the moment
-        }  
-      }else{
+          return super.cd('.'); // we stay in the current directory to fix the project at the moment
+        }
+      } else {
         return super.cd(newValue);
-      }  
-    }else{
+      }
+    } else {
       return super.cd(newValue);
     }
   }
-  private project_options: ISwanProjectOptions = {name:'',stack:'',release:'',platform:'',user_script:'',readme:''};
-  private project_tags:string[] = ['name','stack','release','platform','python2','python3','kernel_dirs'] 
+  private project_options: ISwanProjectOptions = {
+    name: '',
+    stack: '',
+    release: '',
+    platform: '',
+    user_script: '',
+    readme: ''
+  };
+  private project_tags: string[] = [
+    'name',
+    'stack',
+    'release',
+    'platform',
+    'python2',
+    'python3',
+    'kernel_dirs'
+  ];
 }
 
 export class SwanFileBrowser extends FileBrowser {
