@@ -1,11 +1,14 @@
 """
 swanfilebrowser setup
 """
+import site
 import json
 import sys
 from pathlib import Path
 
 import setuptools
+
+site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
 
 HERE = Path(__file__).parent.resolve()
 
