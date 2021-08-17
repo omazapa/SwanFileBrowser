@@ -25,11 +25,7 @@ import { PageConfig, PathExt, URLExt } from '@jupyterlab/coreutils';
 
 import { IDocumentManager } from '@jupyterlab/docmanager';
 
-import {
-  FileBrowser,
-  FileUploadStatus,
-  IFileBrowserFactory
-} from '@jupyterlab/filebrowser';
+import { FileUploadStatus, IFileBrowserFactory } from '@jupyterlab/filebrowser';
 
 //import { SWANLauncher } from '@swan/launcher';
 
@@ -241,14 +237,19 @@ async function activateFactory(
     id: string,
     options: IFileBrowserFactory.IOptions = {}
   ) => {
-    const model = new SwanFileBrowserModel({
-      auto: options.auto ?? true,
-      manager: docManager,
-      driveName: options.driveName || '',
-      refreshInterval: options.refreshInterval,
-      state:
-        options.state === null ? undefined : options.state || state || undefined
-    });
+    const model = new SwanFileBrowserModel(
+      {
+        auto: options.auto ?? true,
+        manager: docManager,
+        driveName: options.driveName || '',
+        refreshInterval: options.refreshInterval,
+        state:
+          options.state === null
+            ? undefined
+            : options.state || state || undefined
+      },
+      commands
+    );
     const restore = options.restore;
     const widget = new SwanFileBrowser({ id, model, restore });
 
@@ -806,7 +807,7 @@ function addCommands(
 
   commands.addCommand(CommandIDs.createLauncher, {
     label: 'New Launcher',
-    execute: () => Private.createLauncher(commands, <FileBrowser>browser)
+    execute: () => Private.createLauncher(commands, <SwanFileBrowser>browser)
   });
 
   commands.addCommand(CommandIDs.toggleNavigateToCurrentDirectory, {
@@ -1091,11 +1092,11 @@ namespace Private {
         return;
       }
 
-      return browserForPath;
+      return <SwanFileBrowser>browserForPath;
     }
 
     // if driveName is empty, assume the main filebrowser
-    return browser;
+    return <SwanFileBrowser>browser;
   }
 
   /**

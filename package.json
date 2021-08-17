@@ -86,7 +86,8 @@
   "jupyterlab": {
     "extension": true,
     "schemaDir": "schema",
-    "outputDir": "swanfilebrowser/labextension"
+    "outputDir": "swanfilebrowser/labextension",
+    "disabledExtensions": ["@jupyterlab/filebrowser-extension"]
   },
   "styleModule": "style/index.js"
 }

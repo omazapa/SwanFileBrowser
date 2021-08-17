@@ -1,18 +1,14 @@
 """
 swanfilebrowser setup
 """
+import site
 import json
+import sys
 from pathlib import Path
 
-from jupyter_packaging import (
-    create_cmdclass,
-    install_npm,
-    ensure_targets,
-    combine_commands,
-    skip_if_exists,
-    get_data_files
-)
 import setuptools
+
+site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
 
 HERE = Path(__file__).parent.resolve()
 
@@ -27,31 +23,14 @@ ensured_targets = [
     str(lab_path / "static/style.js")
 ]
 
-package_data_spec = {name: ["*"]}
-
 labext_name = "@swan/filebrowser-extension"
 
 data_files_spec = [
-    ("share/jupyter/labextensions/%s" % labext_name, str(lab_path), "**"),
-    ("share/jupyter/labextensions/%s" % labext_name, str(HERE), "install.json"),
+    ("share/jupyter/labextensions/%s" % labext_name, str(lab_path.relative_to(HERE)), "**"),
+    ("share/jupyter/labextensions/%s" % labext_name, str("."), "install.json"),
 ]
 
 long_description = (HERE / "README.md").read_text()
-
-cmdclass = create_cmdclass(
-    "jsdeps", package_data_spec=package_data_spec, data_files_spec=data_files_spec
-)
-
-js_command = combine_commands(
-    install_npm(HERE, build_cmd="build:prod", npm=["jlpm"]),
-    ensure_targets(ensured_targets),
-)
-
-is_repo = (HERE / ".git").exists()
-if is_repo:
-    cmdclass["jsdeps"] = js_command
-else:
-    cmdclass["jsdeps"] = skip_if_exists(jstargets, js_command)
 
 # Get the package info from package.json
 pkg_json = json.loads((HERE / "package.json").read_bytes())
@@ -65,12 +44,8 @@ setup_args = dict(
     license=pkg_json["license"],
     long_description=long_description,
     long_description_content_type="text/markdown",
-    cmdclass=cmdclass,
-    data_files=get_data_files(data_files_spec), 
     packages=setuptools.find_packages(),
-    install_requires=[
-        "jupyter_server>=1.6,<2"
-    ],
+    install_requires=[],
     zip_safe=False,
     include_package_data=True,
     python_requires=">=3.6",
@@ -85,8 +60,30 @@ setup_args = dict(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Framework :: Jupyter",
+        "Framework :: Jupyter :: JupyterLab",
+        "Framework :: Jupyter :: JupyterLab :: 3",
+        "Framework :: Jupyter :: JupyterLab :: Extensions",
+        "Framework :: Jupyter :: JupyterLab :: Extensions :: Prebuilt",
     ],
 )
+
+try:
+    from jupyter_packaging import (
+        wrap_installers,
+        npm_builder,
+        get_data_files
+    )
+    post_develop = npm_builder(
+        build_cmd="install:extension", source_dir="src", build_dir=lab_path
+    )
+    setup_args["cmdclass"] = wrap_installers(post_develop=post_develop, ensured_targets=ensured_targets)
+    setup_args["data_files"] = get_data_files(data_files_spec)
+except ImportError as e:
+    import logging
+    logging.basicConfig(format="%(levelname)s: %(message)s")
+    logging.warning("Build tool `jupyter-packaging` is missing. Install it with pip or conda.")
+    if not ("--name" in sys.argv or "--version" in sys.argv):
+        raise e
 
 if __name__ == "__main__":
     setuptools.setup(**setup_args)

@@ -3,10 +3,35 @@
 import { FilterFileBrowserModel, FileBrowser } from '@jupyterlab/filebrowser';
 import { request } from './request';
 import { validateSpecModels } from './kernelspec/validate';
+import { SwanDirListing } from './listing';
+import { JSONObject } from '@lumino/coreutils';
+import { showErrorMessage, Dialog } from '@jupyterlab/apputils';
+import { CommandRegistry } from '@lumino/commands';
+/**
+ * SWAN Project options from .swanproject file plus readme
+ * this is required to validated that the project file is not corrupted,
+ * two special cases are the readme and name that is not part of the the .swanproject file,
+ * but it is sent in the request.
+ */
+export interface ISwanProjectOptions {
+  name?: string;
+  stack?: string;
+  release?: string;
+  platform?: string;
+  user_script?: string;
+  readme?: string | null | undefined;
+  python2?: any;
+  python3?: any;
+  kernel_dirs?: string[];
+}
 
 export class SwanFileBrowserModel extends FilterFileBrowserModel {
-  constructor(options: FilterFileBrowserModel.IOptions) {
+  constructor(
+    options: FilterFileBrowserModel.IOptions,
+    commads: CommandRegistry
+  ) {
     super(options);
+    this._commands = commads;
     this.kernelSpecSetPathRequest(this.path);
   }
 
@@ -59,16 +84,143 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
       );
     }
   }
-  async cd(newValue: string): Promise<void> {
-    return super.cd(newValue).then(async () => {
-      await this.kernelSpecSetPathRequest(this.path);
-    });
+
+  protected projectInfoRequest(project: string): any {
+    const dataToSend = { path: project, caller: 'swanfilebrowser' };
+    try {
+      return request<any>('swan/project/info', {
+        body: JSON.stringify(dataToSend),
+        method: 'POST'
+      });
+    } catch (reason) {
+      console.error(
+        `Error on POST 'swan/project/info'+ ${dataToSend}.\n${reason}`
+      );
+    }
   }
+
+  protected contentRequest(cwd: string): any {
+    try {
+      return request<any>('api/contents/' + cwd, {
+        method: 'GET'
+      }).then(rvalue => {
+        return rvalue;
+      });
+    } catch (reason) {
+      console.error(`Error on GET 'api/contents'+ ${cwd}.\n${reason}`);
+    }
+  }
+
+  protected isValidProject(project_data: JSONObject): boolean {
+    for (const tag in this.project_tags) {
+      if (!(this.project_tags[tag] in project_data)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  protected getProjectMissingTags(project_data: JSONObject): string[] {
+    const missing_tags: string[] = [];
+    for (const tag in this.project_tags) {
+      if (!(tag in project_data)) {
+        missing_tags.push(tag);
+      }
+    }
+    return missing_tags;
+  }
+
+  async cd(newValue: string): Promise<void> {
+    if (newValue !== '.') {
+      const content = await this.contentRequest(newValue);
+      if (content.is_project === true) {
+        const project_info = await this.projectInfoRequest(newValue);
+        const project_data = project_info[
+          'project_data'
+        ] as ISwanProjectOptions;
+        if (this.isValidProject(project_data as JSONObject)) {
+          await this.kernelSpecSetPathRequest(newValue);
+          return super.cd(newValue);
+        } else {
+          const okButton = Dialog.okButton({ accept: false });
+          await showErrorMessage(
+            'Project Error:',
+            'Error reading the configuration of project ' +
+              project_data?.name +
+              ', please click OK to define a new one.',
+            [okButton]
+          );
+
+          if (okButton.accept) {
+            await this._commands
+              .execute('swan:edit-project-dialog', {
+                name: project_data?.name,
+                stack: project_data?.stack,
+                release: project_data?.release,
+                platform: project_data?.platform,
+                user_script: project_data?.user_script,
+                corrupted: true
+              })
+              .catch(message => {
+                console.log(message);
+              });
+          }
+          return super.cd('.'); // we stay in the current directory to fix the project at the moment
+        }
+      } else {
+        return super.cd(newValue);
+      }
+    } else {
+      return super.cd(newValue);
+    }
+  }
+  private project_tags: string[] = [
+    'name',
+    'stack',
+    'release',
+    'platform',
+    'python2',
+    'python3',
+    'kernel_dirs'
+  ];
+  private _commands: CommandRegistry;
 }
 
 export class SwanFileBrowser extends FileBrowser {
   constructor(options: FileBrowser.IOptions) {
     super(options);
     super.id = options.id;
+    const model = (this.model = <SwanFileBrowserModel>options.model);
+    const renderer = options.renderer;
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    this.layout.removeWidget(this._listing);
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    this._listing = this.createDirListing({
+      model,
+      renderer,
+      translator: this.translator
+    });
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    this.layout.addWidget(this._listing);
   }
+
+  /**
+   * Create the underlying DirListing instance.
+   *
+   * @param options - The DirListing constructor options.
+   *
+   * @returns The created DirListing instance.
+   */
+  protected createDirListing(options: SwanDirListing.IOptions): SwanDirListing {
+    return new SwanDirListing(options);
+  }
+
+  // public listing: SwanDirListing;
+  public model: SwanFileBrowserModel;
 }
