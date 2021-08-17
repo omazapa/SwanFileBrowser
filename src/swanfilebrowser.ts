@@ -6,7 +6,7 @@ import { validateSpecModels } from './kernelspec/validate';
 import { SwanDirListing } from './listing';
 import { JSONObject } from '@lumino/coreutils';
 import { showErrorMessage, Dialog } from '@jupyterlab/apputils';
-
+import { CommandRegistry } from '@lumino/commands';
 /**
  * SWAN Project options from .swanproject file plus readme
  * this is required to validated that the project file is not corrupted,
@@ -26,8 +26,12 @@ export interface ISwanProjectOptions {
 }
 
 export class SwanFileBrowserModel extends FilterFileBrowserModel {
-  constructor(options: FilterFileBrowserModel.IOptions) {
+  constructor(
+    options: FilterFileBrowserModel.IOptions,
+    commads: CommandRegistry
+  ) {
     super(options);
+    this._commands = commads;
     this.kernelSpecSetPathRequest(this.path);
   }
 
@@ -110,7 +114,6 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
   protected isValidProject(project_data: JSONObject): boolean {
     for (const tag in this.project_tags) {
       if (!(this.project_tags[tag] in project_data)) {
-        console.log(this.project_tags[tag]);
         return false;
       }
     }
@@ -132,34 +135,35 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
       const content = await this.contentRequest(newValue);
       if (content.is_project === true) {
         const project_info = await this.projectInfoRequest(newValue);
-        console.log('INSIDE PROJECT');
         const project_data = project_info[
           'project_data'
         ] as ISwanProjectOptions;
         if (this.isValidProject(project_data as JSONObject)) {
-          this.project_options = project_data;
-          console.log(this.project_options);
           await this.kernelSpecSetPathRequest(newValue);
           return super.cd(newValue);
         } else {
-          // this.project_options = project_data;
-          const missing_tags = this.getProjectMissingTags(
-            project_data as JSONObject
-          );
-          const available_tags = this.project_tags.filter(
-            item => !missing_tags.includes(item)
-          );
-          const okButton = Dialog.okButton();
+          const okButton = Dialog.okButton({ accept: false });
           await showErrorMessage(
             'Project Error:',
-            'The configuration file of the project (.swanproject) is currupted, missing fields are:' +
-              available_tags +
-              '. \nThe project can not be opened, do you want to open a Dialog to edit it?',
-            [Dialog.cancelButton(), okButton]
+            'Error reading the configuration of project ' +
+              project_data?.name +
+              ', please click OK to define a new one.',
+            [okButton]
           );
-          console.log(okButton.accept);
+
           if (okButton.accept) {
-            //TODO
+            await this._commands
+              .execute('swan:edit-project-dialog', {
+                name: project_data?.name,
+                stack: project_data?.stack,
+                release: project_data?.release,
+                platform: project_data?.platform,
+                user_script: project_data?.user_script,
+                corrupted: true
+              })
+              .catch(message => {
+                console.log(message);
+              });
           }
           return super.cd('.'); // we stay in the current directory to fix the project at the moment
         }
@@ -170,14 +174,6 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
       return super.cd(newValue);
     }
   }
-  private project_options: ISwanProjectOptions = {
-    name: '',
-    stack: '',
-    release: '',
-    platform: '',
-    user_script: '',
-    readme: ''
-  };
   private project_tags: string[] = [
     'name',
     'stack',
@@ -187,6 +183,7 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
     'python3',
     'kernel_dirs'
   ];
+  private _commands: CommandRegistry;
 }
 
 export class SwanFileBrowser extends FileBrowser {

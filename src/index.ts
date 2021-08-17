@@ -237,14 +237,19 @@ async function activateFactory(
     id: string,
     options: IFileBrowserFactory.IOptions = {}
   ) => {
-    const model = new SwanFileBrowserModel({
-      auto: options.auto ?? true,
-      manager: docManager,
-      driveName: options.driveName || '',
-      refreshInterval: options.refreshInterval,
-      state:
-        options.state === null ? undefined : options.state || state || undefined
-    });
+    const model = new SwanFileBrowserModel(
+      {
+        auto: options.auto ?? true,
+        manager: docManager,
+        driveName: options.driveName || '',
+        refreshInterval: options.refreshInterval,
+        state:
+          options.state === null
+            ? undefined
+            : options.state || state || undefined
+      },
+      commands
+    );
     const restore = options.restore;
     const widget = new SwanFileBrowser({ id, model, restore });
 
