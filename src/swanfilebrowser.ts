@@ -165,10 +165,13 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
                 console.log(message);
               });
           }
+          await this.kernelSpecSetPathRequest(this.path);
           return super.cd('.'); // we stay in the current directory to fix the project at the moment
         }
       } else {
-        return super.cd(newValue);
+        return super.cd(newValue).then(async ()=>{
+          await this.kernelSpecSetPathRequest(this.path);
+        });
       }
     } else {
       return super.cd(newValue);
