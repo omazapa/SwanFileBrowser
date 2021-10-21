@@ -27,8 +27,6 @@ import { IDocumentManager } from '@jupyterlab/docmanager';
 
 import { FileUploadStatus, IFileBrowserFactory } from '@jupyterlab/filebrowser';
 
-//import { SWANLauncher } from '@swan/launcher';
-
 import { IMainMenu } from '@jupyterlab/mainmenu';
 
 import { Contents } from '@jupyterlab/services';

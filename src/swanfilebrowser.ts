@@ -8,10 +8,10 @@ import { JSONObject } from '@lumino/coreutils';
 import { showErrorMessage, Dialog } from '@jupyterlab/apputils';
 import { CommandRegistry } from '@lumino/commands';
 /**
- * SWAN Project options from .swanproject file plus readme
+ * SWAN Project options from .swanproject
  * this is required to validated that the project file is not corrupted,
- * two special cases are the readme and name that is not part of the the .swanproject file,
- * but it is sent in the request.
+ * two special case the .swanproject file,
+ * because it is sending in the request.
  */
 export interface ISwanProjectOptions {
   name?: string;
@@ -19,7 +19,6 @@ export interface ISwanProjectOptions {
   release?: string;
   platform?: string;
   user_script?: string;
-  readme?: string | null | undefined;
   python2?: any;
   python3?: any;
   kernel_dirs?: string[];
@@ -86,15 +85,14 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
   }
 
   protected projectInfoRequest(project: string): any {
-    const dataToSend = { path: project, caller: 'swanfilebrowser' };
+    const uri = 'swan/project/info?caller=swanfilebrowser&path='+project;
     try {
-      return request<any>('swan/project/info', {
-        body: JSON.stringify(dataToSend),
-        method: 'POST'
+      return request<any>(uri, {
+        method: 'GET'
       });
     } catch (reason) {
       console.error(
-        `Error on POST 'swan/project/info'+ ${dataToSend}.\n${reason}`
+        `Error on GET ${uri}.\n${reason}`
       );
     }
   }
