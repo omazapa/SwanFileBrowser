@@ -1,5 +1,13 @@
 // Copyright (c) SWAN Development Team.
 // Author: Omar.Zapata@cern.ch 2021
+
+/**
+ * This file containts the implementation for SwanFileBrowser and SwanFileBrowserModel classes.
+ *
+ * Those classes are the replacement for the default FileBrowser and allows to
+ * manipulated the paths to check is the folder is a project or not and to set the proper kernel path.
+ */
+
 import { FilterFileBrowserModel, FileBrowser } from '@jupyterlab/filebrowser';
 import { request } from './request';
 import { validateSpecModels } from './kernelspec/validate';
@@ -9,9 +17,7 @@ import { showErrorMessage, Dialog } from '@jupyterlab/apputils';
 import { CommandRegistry } from '@lumino/commands';
 /**
  * SWAN Project options from .swanproject
- * this is required to validated that the project file is not corrupted,
- * two special case the .swanproject file,
- * because it is sending in the request.
+ * this is required to validate that the project file is not corrupted
  */
 export interface ISwanProjectOptions {
   name?: string;
@@ -24,6 +30,17 @@ export interface ISwanProjectOptions {
   kernel_dirs?: string[];
 }
 
+/**
+ * Customized SwanFileBrowserModel that inherits from FilterFileBrowserModel.
+ *
+ * This class has overloaded the method 'async cd(newValue: string): Promise<void>'
+ * that a allows to take actions before go to the directory, actions like:
+ * 1) Get the contents of the folder (to check if the folder is a project)
+ * 2) If the  folder is a project we can ge the information of the project stored in the .swanproject
+ * 3) if the information for the project is right then we can set the kernel spec manager
+ * 4) If the project is corrupted, the a Dialog is showed up telling the user the project requires
+ *    to be configured again and the ProjectDialog is called.
+ */
 export class SwanFileBrowserModel extends FilterFileBrowserModel {
   constructor(
     options: FilterFileBrowserModel.IOptions,
@@ -34,6 +51,13 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
     this.kernelSpecSetPathRequest(this.path);
   }
 
+  /**
+   * Request to set the kernelspec manager path in the backend.
+   * Local service manager.services.kernelspecs is updated as well.
+   *
+   * @param path path get information from jupyter api
+   * @returns json object with the information of the path or json object with the information of the error.
+   */
   protected kernelSpecSetPathRequest(path: string): any {
     const dataToSend = { path: path, caller: 'swanfilebrowser' };
     try {
@@ -45,13 +69,6 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
           method: 'GET'
         })
           .then(specs => {
-            //https://stackoverflow.com/questions/46634876/how-can-i-change-a-readonly-property-in-typescript
-            //I need to reset this to null if it is not a project
-            //supported by all browsers
-            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperties
-            // why all this?
-            // calling this.manager.services.kernelspecs.refreshSpecs()  was not working when I am outside the project folder
-            // it was taking the previuos set of kernels and I need to reset it to null.
             if (rvalue.is_project) {
               const validate_specs = validateSpecModels(specs);
               return Object.defineProperty(
@@ -84,19 +101,29 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
     }
   }
 
-  protected projectInfoRequest(project: string): any {
-    const uri = 'swan/project/info?caller=swanfilebrowser&path='+project;
+  /**
+   * Request to get the project information
+   *
+   * @param path path to the project
+   * @returns json object with the project information information.
+   */
+  protected projectInfoRequest(path: string): any {
+    const uri = 'swan/project/info?caller=swanfilebrowser&path=' + path;
     try {
       return request<any>(uri, {
         method: 'GET'
       });
     } catch (reason) {
-      console.error(
-        `Error on GET ${uri}.\n${reason}`
-      );
+      console.error(`Error on GET ${uri}.\n${reason}`);
     }
   }
 
+  /**
+   * Request to get contents from a path
+   *
+   * @param cwd path get information from jupyter api
+   * @returns json object with the information of the path
+   */
   protected contentRequest(cwd: string): any {
     try {
       return request<any>('api/contents/' + cwd, {
@@ -109,6 +136,12 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
     }
   }
 
+  /**
+   * Method to check if the project information is valid or it is corrupted.
+   *
+   * @param project_data json with project data such as name, stack, release etc..
+   * @returns true if the project is valid or false it the project is corrupted.
+   */
   protected isValidProject(project_data: JSONObject): boolean {
     for (const tag in this.project_tags) {
       if (!(this.project_tags[tag] in project_data)) {
@@ -118,16 +151,12 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
     return true;
   }
 
-  protected getProjectMissingTags(project_data: JSONObject): string[] {
-    const missing_tags: string[] = [];
-    for (const tag in this.project_tags) {
-      if (!(tag in project_data)) {
-        missing_tags.push(tag);
-      }
-    }
-    return missing_tags;
-  }
-
+  /**
+   * Overloaded method cd, to check folder information before go in.
+   *
+   * @param newValue new path
+   * @returns void promise.
+   */
   async cd(newValue: string): Promise<void> {
     if (newValue !== '.') {
       const content = await this.contentRequest(newValue);
@@ -167,7 +196,7 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
           return super.cd('.'); // we stay in the current directory to fix the project at the moment
         }
       } else {
-        return super.cd(newValue).then(async ()=>{
+        return super.cd(newValue).then(async () => {
           await this.kernelSpecSetPathRequest(this.path);
         });
       }
