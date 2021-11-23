@@ -216,6 +216,12 @@ export class SwanFileBrowserModel extends FilterFileBrowserModel {
   private _commands: CommandRegistry;
 }
 
+/**
+ * Customized SwanFileBrowser that inherits from FileBrowser.
+ *
+ * This class allows to set our classes SwanFileBrowserModel and SwanDirListing.
+ *
+ */
 export class SwanFileBrowser extends FileBrowser {
   constructor(options: FileBrowser.IOptions) {
     super(options);
@@ -241,16 +247,15 @@ export class SwanFileBrowser extends FileBrowser {
   }
 
   /**
-   * Create the underlying DirListing instance.
+   * Create the underlying SwanDirListing instance.
    *
-   * @param options - The DirListing constructor options.
+   * @param options - The SwanDirListing constructor options.
    *
-   * @returns The created DirListing instance.
+   * @returns The created SwanDirListing instance.
    */
   protected createDirListing(options: SwanDirListing.IOptions): SwanDirListing {
     return new SwanDirListing(options);
   }
 
-  // public listing: SwanDirListing;
   public model: SwanFileBrowserModel;
 }
