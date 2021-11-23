@@ -1,6 +1,11 @@
-// Copyright (c) Jupyter Development Team.
-// Distributed under the terms of the Modified BSD License.
-
+/**
+ * File took from https://github.com/jupyterlab/jupyterlab/blob/master/packages/filebrowser/src/listing.ts
+ * for jupytrelab version 3.0.x.
+ *
+ * In this file, we reimplement the DirListing class in the SwanDirListing class.
+ * This allows you to manipulate the low-level entries in the file browser widget,
+ * allowing us, for example, to change the icon if the folder is a project.
+ */
 import {
   Dialog,
   DOMUtils,
@@ -226,7 +231,7 @@ export class SwanDirListing extends Widget {
   /**
    * Construct a new file browser directory listing widget.
    *
-   * @param model - The file browser view model.
+   * @param options - The file browser view model.
    */
   constructor(options: SwanDirListing.IOptions) {
     super({
