@@ -226,6 +226,10 @@ const FACTORY_MIME = 'application/vnd.lumino.widget-factory';
 
 /**
  * A widget which hosts a file list area.
+ *
+ * The main methods modified for SWAN are:
+ * -> onUpdateRequest
+ * -> updateItemNode
  */
 export class SwanDirListing extends Widget {
   /**
@@ -829,21 +833,13 @@ export class SwanDirListing extends Widget {
       const node = nodes[i];
       const ft = this._manager.registry.getFileTypeForModel(item);
       const swan_item = item as ISwanModel;
-      let is_project = false;
-      if (
-        this.model.path === 'SWAN_projects' &&
-        swan_item.is_project === true &&
-        swan_item.type === 'directory'
-      ) {
-        is_project = true;
-      }
       renderer.updateItemNode(
         node,
         item,
         ft,
         this.translator,
         this._hiddenColumns,
-        is_project
+        swan_item.is_project === true && swan_item.type === 'directory'
       );
       if (this.selection[item.path]) {
         node.classList.add(SELECTED_CLASS);
@@ -2081,14 +2077,6 @@ export namespace SwanDirListing {
       }
 
       if (isProject) {
-        // // render the file item's icon
-        // LabIcon.resolveElement({
-        // icon,
-        // iconClass: classes(iconClass, 'jp-Icon'),
-        // container: iconContainer,
-        // className: ITEM_PROJECT_ICON_CLASS,
-        // stylesheet: 'listing'
-        // });
         swanProjectIcon.element({
           container: iconContainer,
           className: ITEM_ICON_CLASS,

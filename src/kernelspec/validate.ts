@@ -1,5 +1,11 @@
-// Copyright (c) Jupyter Development Team.
-// Distributed under the terms of the Modified BSD License.
+/**
+ * File took from https://github.com/jupyterlab/jupyterlab/blob/master/packages/services/src/kernelspec/validate.ts
+ * for jupyterlab 3.0.x
+ *
+ * This allows to validate the kernels specs and to get the ISpecModel.
+ * This is required to update the manager.services.kernelspecs.specs object
+ * in the SwanFileBrowserModel.
+ */
 import { PartialJSONObject } from '@lumino/coreutils';
 
 /**
